@@ -12,7 +12,8 @@ const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState("");
-  const [errors, setErrors] = useState({ username: "", password: "", confirm: "" , role: ""});
+  const [fullname,setFullname]=useState("");
+  const [errors, setErrors] = useState({ username: "", password: "", confirm: "" , role: "",fullname:""});
    
   const navigate=useNavigate();
 
@@ -20,7 +21,7 @@ const [username, setUsername] = useState("");
   const validateForm = (e) => {
     e.preventDefault();
     let valid = true;
-    const newErrors = { username: "", password: "", confirm: "",  role: ""};
+    const newErrors = { username: "", password: "", confirm: "",  role: "",fullname:""};
 
 
     if (!username.endsWith("inditronics@gmail.com")) {
@@ -44,11 +45,16 @@ const [username, setUsername] = useState("");
       newErrors.role = "Please select a role.";
       valid = false;
     }
+    if(!fullname)
+    {
+       newErrors.fullname="Please Enter Full Name"
+    }
 
     setErrors(newErrors);
     if (valid) {
       const saveToDb=async()=>{
                 const data={
+                  fullname:fullname,
                   username:username,
                   password:password,
                   role:role
@@ -81,6 +87,25 @@ const [username, setUsername] = useState("");
           <p className="text-gray-500 text-sm text-center">
             Create your account to get started
           </p>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-gray-600 text-sm font-medium mb-1">
+           Full NAME (First Name Last Name)
+          </label>
+          <div className="flex items-center border rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-purple-400">
+            <User className="w-5 h-5 text-gray-400 mr-2" />
+            <input
+              type="text"
+              placeholder="Choose a username"
+              value={fullname}
+              onChange={(e) => setFullname(e.target.value)}
+              className="w-full outline-none border-none bg-transparent text-gray-700"
+            />
+          </div>
+          {errors.fullname && (
+            <p className="text-red-500 text-sm mt-1">{errors.fullname}</p>
+          )}
         </div>
 
         {/* Username */}

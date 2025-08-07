@@ -9,6 +9,7 @@ import Workspace from "./Components/Workspace";
 import ProtectedRoute from "./Route/ProtectedRoute";
 import Unauthorized from "./Authentication/Unauthorized";
 import NotFound from "./Authentication/NotFound";
+import LeadSpace from "./Components/LeadSpace";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/login" element={<Login/>}></Route>
           <Route path="/register" element={<Register/>}></Route>
           <Route path="/unauthorized" element={<Unauthorized/>}></Route>
+          <Route path="/leadspace" element={<LeadSpace/>}></Route>
          <Route
             path="/dashboard"
             element={

@@ -27,13 +27,13 @@ export default function Login() {
         });
         if(res.status===200)
         {
-  
            localStorage.setItem("token", res.data.token);
             const decoded = jwtDecode(res.data.token);
            alert("✅ Login Successful");
            if (decoded.role === "admin") {
           navigate("/dashboard");
         } else if (decoded.role === "Team Lead") {
+          localStorage.setItem("data",username);
           navigate("/teams");
         } else {
           navigate("/taskbar");
