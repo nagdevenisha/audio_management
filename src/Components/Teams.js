@@ -7,6 +7,11 @@ import { useRef } from "react";
 import axios from "axios";
 
 function Teams() {
+
+   const api="https://backend-fj48.onrender.com";
+  // const api="http://localhost:3001";
+
+
   const [selectedCity, setSelectedCity] = useState("");
   const[cities,setCities]=useState([]);
   const[stations,setStations]=useState([]);
@@ -28,8 +33,8 @@ function Teams() {
   const navigate=useNavigate();
   const handleCities=async()=>{
   try{
-      const res=await axios.get('http://localhost:3001/app/city');
-      const response=await axios.get('http://localhost:3001/app/login',{
+      const res=await axios.get(`${api}/app/city`);
+      const response=await axios.get(`${api}/app/login`,{
          params:{username:users}
       });
       const { user } = response.data;
@@ -51,10 +56,10 @@ function Teams() {
   const handleTeams=async(city)=>{
   try{
     console.log(city);
-      const res=await axios.get('http://localhost:3001/app/station',{
+      const res=await axios.get(`${api}/app/station`,{
       params:{city}
      });
-     const response=await axios.get('http://localhost:3001/app/teamspercity',{
+     const response=await axios.get(`${api}/app/teamspercity`,{
       params:{city}
      })
      console.log(response.data);
@@ -93,7 +98,7 @@ function Teams() {
         members: selectedMembers, // extract names only
       };
      try {
-      const res = await axios.post("http://localhost:3001/app/saveteam",payload);
+      const res = await axios.post(`${api}/app/saveteam`,payload);
     alert('Team Created');
     console.log(res.data);
     setTeams([...teams, res.data.team]);
@@ -104,7 +109,7 @@ function Teams() {
   };
   const handleMembers=async()=>{
            try{
-                const res= await axios.get("http://localhost:3001/app/getmembers");
+                const res= await axios.get(`${api}/app/getmembers`);
                 if(res.data)
                 {
                     console.log(res.data);

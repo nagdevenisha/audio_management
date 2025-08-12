@@ -16,7 +16,8 @@ const [username, setUsername] = useState("");
   const [errors, setErrors] = useState({ username: "", password: "", confirm: "" , role: "",fullname:""});
    
   const navigate=useNavigate();
-
+  const api="https://backend-fj48.onrender.com";
+  // const api="http://localhost:3001";
 
   const validateForm = (e) => {
     e.preventDefault();
@@ -60,7 +61,7 @@ const [username, setUsername] = useState("");
                   role:role
                 }
                 console.log(data);
-                const res=await axios.post('http://localhost:3001/app/register',data);
+                const res=await axios.post(`${api}/app/register`,data);
                 console.log(res.status);
                 if(res.status===200)
                 {
