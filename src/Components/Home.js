@@ -67,7 +67,7 @@ const Home = () => {
   return (
     <>
     <div>
-    <div className="relative min-h-screen bg-cover bg-center text-center px-6" style={{ backgroundImage: "url('/images/image.png')" }}>
+    <div className="relative min-h-screen bg-cover bg-center text-center px-6" style={{ backgroundImage: "url('/Images/image.png')" }}>
       
       <nav className="w-full absolute top-0 left-0 px-6 py-4 flex justify-end items-center bg-white/30 backdrop-blur-md z-20">
   <ul className="flex gap-6 text-gray-800 font-medium">
