@@ -73,7 +73,7 @@ const Home = () => {
   <ul className="flex gap-6 text-gray-800 font-medium">
     <li><a href="#features" className="hover:text-purple-600 transition">Features</a></li>
     <li><a href="#about" className="hover:text-purple-600 transition">About Us</a></li>
-    <li><a href="/login" className="hover:text-purple-600 transition">Start Now</a></li>
+    <li><Link to="/login" className="hover:text-purple-600 transition">Start Now</Link></li>
   </ul>
 </nav>
 

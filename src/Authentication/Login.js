@@ -3,6 +3,7 @@ import { LogIn, User, Lock, Music, Waves, Headphones } from "lucide-react";
 import axios from "axios";
 import { data, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+import { Link } from "lucide-react";
 
 
 
@@ -146,9 +147,9 @@ export default function Login() {
 
         {/* Links */}
         <div className="mt-6 flex justify-between text-sm text-gray-600">
-          <a href="/register" className="hover:text-purple-600 font-medium">
+          <Link to="/register" className="hover:text-purple-600 font-medium">
             Create Your Studio Account
-          </a>
+          </Link>
           <a href="/" className="hover:text-purple-600">
             Back to Home
           </a>
