@@ -3,7 +3,7 @@ import { LogIn, User, Lock, Music, Waves, Headphones } from "lucide-react";
 import axios from "axios";
 import { data, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { Link } from "lucide-react";
+import { Link } from "react-router-dom";
 
 
 
