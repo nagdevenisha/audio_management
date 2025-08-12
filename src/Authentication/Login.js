@@ -9,6 +9,10 @@ import { Link } from "react-router-dom";
 
 export default function Login() {
 
+
+    const api="https://backend-fj48.onrender.com";
+  // const api="http://localhost:3001";
+
     const[username,setUsername]=useState('');
     const[password,setPassword]=useState('');
     const[field,setField]=useState('');
@@ -20,7 +24,7 @@ export default function Login() {
       if(username && password)
       {
       try {
-        const res = await axios.post("http://localhost:3001/app/login", {
+        const res = await axios.post(`${api}/app/login`, {
           username,
           password
         }, {
