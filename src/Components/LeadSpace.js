@@ -89,7 +89,7 @@ useEffect(()=>{
             <option>Radio Mirchi</option>
             <option>Red FM</option>
           </select> */}
-           <input type='text' value={team.station} className="border rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500"></input>
+           <input type='text' value={team?.station || " "} className="border rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500"></input>
           <input
             type="text"
             placeholder="Assigned to.."
