@@ -32,7 +32,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "postbuild": "find build -type f -name 'image.png' -print || echo '❌ image.png NOT FOUND'"
   },
   "eslintConfig": {
     "extends": [
