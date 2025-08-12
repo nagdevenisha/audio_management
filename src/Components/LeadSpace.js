@@ -84,12 +84,11 @@ useEffect(()=>{
           ➤ Assign New Task
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* <select className="border rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
+          <select className="border rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500">
             <option>Select station...</option>
             <option>Radio Mirchi</option>
             <option>Red FM</option>
-          </select> */}
-          <input type='text' value={team.station}></input>
+          </select>
           <input
             type="text"
             placeholder="Assigned to.."
