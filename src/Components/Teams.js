@@ -8,8 +8,8 @@ import axios from "axios";
 
 function Teams() {
 
-  //  const api="https://backend-fj48.onrender.com";
-   const api="http://localhost:3001";
+   const api="https://backend-fj48.onrender.com";
+  //  const api="http://localhost:3001";
 
 
   const [selectedCity, setSelectedCity] = useState("");
