@@ -168,7 +168,7 @@ const fetchtasks=async(team)=>{
                   city: team.city,
                 });;
          setTasks(res.data);
-         navigate("/leadspace",{state:{team:team,tasks:res.data}});
+         navigate("/leadspace",{state:{team:team, tasks: res?.data || []}});
       }
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-8">
