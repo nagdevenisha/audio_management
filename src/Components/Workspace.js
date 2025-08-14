@@ -1,9 +1,8 @@
 import React from 'react';
-import { ChevronLeft, Calendar, Clock, MapPin } from "lucide-react";
+import { ChevronLeft, Calendar, Clock, MapPin ,Radio,Upload} from "lucide-react";
 
 export default function Workspace() {
   return (
-   <div>
    <div className="min-h-screen bg-white px-6 py-8">
       {/* Back Button */}
       <button
@@ -23,8 +22,8 @@ export default function Workspace() {
         matching system
       </p>
 
-      {/* Cards Container */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Filters Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Select City */}
         <div className="bg-white shadow-md border rounded-lg p-6">
           <div className="flex items-center mb-4">
@@ -67,22 +66,46 @@ export default function Workspace() {
             <h2 className="text-lg font-semibold">Select Radio Station</h2>
           </div>
           <label className="block text-sm text-gray-700 mb-2">
-            Choose  station
+            Choose station
           </label>
           <select
             className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
-            <option value="">Select Station</option>
-            <option value="Big fm">Big fm</option>
+            <option value="">Select Radio Station</option>
             <option value="Radio city">Radio city</option>
             <option value="Red fm">Red fm</option>
-            <option value="Radio Mirchi">Radio Mirchi</option>
+            <option value="Radio mirchi">Radio mirchi</option>
+            <option value="Radio Tadka">Radio Tadka</option>
           </select>
         </div>
       </div>
-    </div>
 
-   </div>
-     
+      {/* Upload Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 top-2">
+        {/* Master Fingerprints */}
+        <div className="bg-white shadow-md border rounded-lg p-6">
+          <div className="flex items-center mb-4">
+            <Radio className="w-5 h-5 text-purple-600 mr-2" />
+            <h2 className="text-lg font-semibold">Master Fingerprints</h2>
+          </div>
+          <button className="flex items-center justify-center w-full border border-gray-300 rounded-md p-3 hover:bg-gray-50 transition">
+            <Upload className="w-4 h-4 mr-2" /> Add Master Fingerprint
+          </button>
+          <p className="text-sm text-gray-500 mt-2">0 fingerprints uploaded</p>
+        </div>
+
+        {/* Recordings */}
+        <div className="bg-white shadow-md border rounded-lg p-6">
+          <div className="flex items-center mb-4">
+            <Upload className="w-5 h-5 text-purple-600 mr-2" />
+            <h2 className="text-lg font-semibold">Recordings</h2>
+          </div>
+          <button className="flex items-center justify-center w-full border border-gray-300 rounded-md p-3 hover:bg-gray-50 transition">
+            <Upload className="w-4 h-4 mr-2" /> Add Recording
+          </button>
+          <p className="text-sm text-gray-500 mt-2">0 recordings uploaded</p>
+        </div>
+      </div>
+    </div>
   )
 }
