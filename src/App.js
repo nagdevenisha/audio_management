@@ -43,6 +43,7 @@ function App() {
             } 
           />
           <Route path="*" element={<NotFound />} />
+          <Route path="/workspace" element={<Workspace/>}></Route>
         </Routes>
       </BrowserRouter>
     </div>
