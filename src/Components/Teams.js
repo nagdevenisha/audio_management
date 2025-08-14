@@ -8,7 +8,7 @@ import axios from "axios";
 
 function Teams() {
 
-   const api="https://backend-fj48.onrender.com";
+   const api="https://backend-urlk.onrender.com";
   //  const api="http://localhost:3001";
 
 
