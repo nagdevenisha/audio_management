@@ -159,17 +159,17 @@ function Teams() {
   }
 
   
-const fetchtasks=async(team)=>{
-         console.log(team);
-         const res=await axios.post(`${api}/app/getTasks`, {
-                  leadName: team.leadName,
-                  teamName: team.teamName,
-                  station: team.station,
-                  city: team.city,
-                });;
-         setTasks(res.data);
-         navigate("/leadspace",{state:{team:team, tasks: res?.data || []}});
-      }
+// const fetchtasks=async(team)=>{
+//          console.log(team);
+//          const res=await axios.post(`${api}/app/getTasks`, {
+//                   leadName: team.leadName,
+//                   teamName: team.teamName,
+//                   station: team.station,
+//                   city: team.city,
+//                 });;
+//          setTasks(res.data);
+//          navigate("/leadspace",{state:{team:team, tasks: res?.data || []}});
+//       }
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-8">
       {/* Back Button */}
@@ -365,7 +365,8 @@ const fetchtasks=async(team)=>{
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                     className="min-w-[700px] bg-white rounded-2xl shadow p-6 border border-gray-200"
-                    onDoubleClick={()=>fetchtasks(team)}
+                    // onDoubleClick={()=>fetchtasks(team)}
+                    onDoubleClick={()=>navigate("/leadspace")}
                   >
                     {/* Team Card Content */}
                     <div className="flex justify-between items-center">
