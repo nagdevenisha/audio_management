@@ -1,13 +1,13 @@
 import React from 'react';
-import { Upload, Play, Edit2, ArrowLeft,Crown, X, User,  Music,FileText } from "lucide-react";
+import { Upload, Play, Edit2, ArrowLeft,Crown, X, User,  Music,FileText ,Trash} from "lucide-react";
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import axios from 'axios';
 
 function LeadSpace() {
-
- const api="https://backend-urlk.onrender.com";
+  
+const api="https://backend-urlk.onrender.com";
   //  const api="http://localhost:3001";
 
 const [team,setTeam]=useState(null);
@@ -18,7 +18,9 @@ const[error,setError]=useState('');
 const navigate = useNavigate();
 const[open,setOpen]=useState(false);
 const location=useLocation();
+const [openEdit, setOpenEdit] = useState(false);
 const [selectedTask, setSelectedTask] = useState(null);
+const [newFiles, setNewFiles] = useState([]);
 
 function timeAgo(dateString) {
   const now = new Date();
@@ -212,7 +214,10 @@ const handleFileChange = (e) => {
                 <button className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg flex items-center gap-1"   onClick={()=>{setOpen(true); setSelectedTask(task);}}>
                   Review
                 </button>
-                <button className="bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded-lg">
+                <button className="bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded-lg" onClick={() => {
+                        setSelectedTask(task);
+                        setNewFiles([]);
+                        setOpenEdit(true);}}>
                   <Edit2 className="w-4 h-4 text-gray-600" />
                 </button>
               </div>
@@ -234,7 +239,12 @@ const handleFileChange = (e) => {
               >
                 <X className="w-5 h-5" />
               </button>
-
+                <button
+                  className="absolute top-8 right-12 text-red-500 hover:text-red-700"
+                  title="Delete Task"
+                >
+                  <Trash className="w-5 h-5" />
+                </button>
               {/* Title */}
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                 {selectedTask.station} Task
@@ -264,8 +274,52 @@ const handleFileChange = (e) => {
           </div>
         </div>
         )}
-
       </div>
+      {openEdit && selectedTask && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 relative">
+      <button
+        onClick={() => setOpenEdit(false)}
+        className="absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+      >
+        <X className="w-5 h-5" />
+      </button>
+      <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+        Add Audio to {selectedTask.station} Task
+      </h2>
+
+      {/* File Upload */}
+      <input
+        type="file"
+        multiple
+        accept="audio/*"
+        onChange={handleFileChange}
+        className="mb-4"
+      />
+
+      {/* Show Selected Files */}
+      {newFiles.length > 0 && (
+        <div className="mb-4">
+          <p className="text-sm font-medium">Files Selected:</p>
+          {newFiles.map((file, i) => (
+            <p key={i} className="text-gray-600 text-sm">{file.name}</p>
+          ))}
+        </div>
+      )}
+
+      {/* Submit */}
+      <button
+        onClick={() => {
+          console.log("Files to upload:", newFiles);
+          setOpenEdit(false);
+        }}
+        className="bg-purple-600 text-white px-4 py-2 rounded"
+      >
+        Upload Files
+      </button>
+    </div>
+        </div>
+      )}
     </div>
     </div>
   )
