@@ -159,17 +159,17 @@ function Teams() {
   }
 
   
-// const fetchtasks=async(team)=>{
-//          console.log(team);
-//          const res=await axios.post(`${api}/app/getTasks`, {
-//                   leadName: team.leadName,
-//                   teamName: team.teamName,
-//                   station: team.station,
-//                   city: team.city,
-//                 });;
-//          setTasks(res.data);
-//          navigate("/leadspace",{state:{team:team, tasks: res?.data || []}});
-//       }
+const fetchtasks=async(team)=>{
+         console.log(team);
+         const res=await axios.post(`${api}/app/getTasks`, {
+                  leadName: team.leadName,
+                  teamName: team.teamName,
+                  station: team.station,
+                  city: team.city,
+                });;
+         setTasks(res.data);
+         navigate("/leadspace",{state:{team:team, tasks: res?.data || []}});
+      }
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-8">
       {/* Back Button */}
