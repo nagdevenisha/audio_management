@@ -365,8 +365,7 @@ const fetchtasks=async(team)=>{
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
                     className="min-w-[700px] bg-white rounded-2xl shadow p-6 border border-gray-200"
-                    // onDoubleClick={()=>fetchtasks(team)}
-                    onDoubleClick={()=>navigate("/leadspace")}
+                    onDoubleClick={()=>fetchtasks(team)}
                   >
                     {/* Team Card Content */}
                     <div className="flex justify-between items-center">
