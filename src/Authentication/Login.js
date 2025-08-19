@@ -40,7 +40,7 @@ export default function Login() {
         } else if (decoded.role === "Team Lead") {
           localStorage.setItem("data",username);
           navigate("/teams");
-        } else {
+        } else if (decoded.role === "Member") { 
           navigate("/taskbar");
         }
 

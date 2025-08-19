@@ -29,8 +29,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/taskbar"  element={
-              <ProtectedRoute roles={["member"]}>
+           <Route path="/taskbar"  element={
+              <ProtectedRoute roles={["Member"]}>
                 <TaskBar/>
               </ProtectedRoute>
             }></Route>
