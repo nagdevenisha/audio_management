@@ -1,14 +1,14 @@
 import React from 'react';
-import { Upload, Play, Edit2, ArrowLeft,Crown, X, User,  Music,FileText ,Trash} from "lucide-react";
+import { Upload, Play, Edit2, ArrowLeft,Crown,X, User,  Music,FileText ,Trash} from "lucide-react";
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import axios from 'axios';
 
 function LeadSpace() {
-  
-const api="https://backend-urlk.onrender.com";
-  //  const api="http://localhost:3001";
+
+ //const api="https://backend-fj48.onrender.com";
+   const api="http://localhost:3001";
 
 const [team,setTeam]=useState(null);
 const[instructions,setInstructions]=useState('');
@@ -127,7 +127,7 @@ const handleFileChange = (e) => {
         <h2 className="text-xl font-semibold flex items-center gap-2 text-purple-700">
           🎧 {team.station}{" "}{team.teamName}{/*Radio City Quality Team*/}
         </h2>
-        <div className="grid grid-cols-3 gap-6 mt-4">
+        <div className="grid grid-cols-4 gap-6 mt-4">
           <div>
             <p className="text-500 font-semibold mb-1">Team Lead</p>
             <div className="flex items-center">
@@ -149,6 +149,10 @@ const handleFileChange = (e) => {
                         {team.pendingtask }{" "}Pending
                       </span>
             </p>
+          </div>
+           <div>
+            <p className="text-500 font-semibold">Workspace</p>
+            <button className=' bg-purple-500 rounded-full w-30 px-2 py-1 '  onClick={() => navigate("/workspace")}>Start Work</button>
           </div>
         </div>
       </div>}
