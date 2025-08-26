@@ -1,90 +1,64 @@
-import {useState} from 'react';
-import {ChevronLeft,Search} from "lucide-react";
-
+import {useEffect, useState} from 'react';
+import {ChevronLeft,Crown,Search} from "lucide-react";
+import { Play, User, Clock ,Info,X,FileText} from "lucide-react";
+import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function TaskBar() {
 
-   const [searchTerm, setSearchTerm] = useState("");
-    const allTasks= [
-    {
-      id: '1',
-      title: 'Quality Check - Morning Show Segment',
-      assignedTo: 'John Smith',
-      teamName: 'Quality Team Alpha',
-      teamId: 'qt-alpha',
-      status: 'pending',
-      priority: 'high',
-      duration: '45:30',
-      dueDate: '2024-01-20',
-      description: 'Review morning show audio for quality standards'
-    },
-    {
-      id: '2',
-      title: 'Label Music Tracks - Rock Playlist',
-      assignedTo: 'Sarah Johnson',
-      teamName: 'Labelling Team Beta',
-      teamId: 'lt-beta',
-      status: 'in-progress',
-      priority: 'medium',
-      duration: '1:15:20',
-      dueDate: '2024-01-21',
-      description: 'Categorize and label rock music tracks'
-    },
-    {
-      id: '3',
-      title: 'Quality Review - Advertisement Spots',
-      assignedTo: 'Mike Davis',
-      teamName: 'Quality Team Alpha',
-      teamId: 'qt-alpha',
-      status: 'completed',
-      priority: 'low',
-      duration: '30:15',
-      dueDate: '2024-01-19',
-      description: 'Check advertisement audio quality and compliance'
-    },
-    {
-      id: '4',
-      title: 'Content Analysis - Talk Show',
-      assignedTo: 'Emily Chen',
-      teamName: 'Labelling Team Gamma',
-      teamId: 'lt-gamma',
-      status: 'needs-review',
-      priority: 'high',
-      duration: '2:10:45',
-      dueDate: '2024-01-22',
-      description: 'Analyze and categorize talk show content'
-    },
-    {
-      id: '5',
-      title: 'Audio Enhancement - News Segment',
-      assignedTo: 'John Smith',
-      teamName: 'Quality Team Alpha',
-      teamId: 'qt-alpha',
-      status: 'pending',
-      priority: 'medium',
-      duration: '25:40',
-      dueDate: '2024-01-23',
-      description: 'Enhance news segment audio quality'
-    },
-    {
-      id: '6',
-      title: 'Music Classification - Jazz Collection',
-      assignedTo: 'Sarah Johnson',
-      teamName: 'Labelling Team Beta',
-      teamId: 'lt-beta',
-      status: 'in-progress',
-      priority: 'low',
-      duration: '1:30:00',
-      dueDate: '2024-01-24',
-      description: 'Classify and organize jazz music collection'
-    }
-  ];
 
-  const filteredTasks = allTasks.filter(task =>
-    task.assignedTo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    task.teamName.toLowerCase().includes(searchTerm.toLowerCase())
+    const api="https://backend-fj48.onrender.com";
+  //  const api="http://localhost:3001";
+   const [searchTerm, setSearchTerm] = useState("");
+   const[openModal,setopenModal]=useState(false);
+   const[tasks,setTasks]=useState([]);
+   const[segment,setSegment]=useState([]);
+   const navigate=useNavigate();
+   const location=useLocation();
+  useEffect(()=>{
+         if (location.state?.data) {
+        setTasks(location.state.data);
+  }
+
+  },[location.state]);
+
+  const filteredTasks = tasks.filter(task => {
+  const search = searchTerm.toLowerCase();
+  return (
+    task.assignto?.toLowerCase().includes(search) ||
+    task.instructions?.toLowerCase().includes(search) ||
+    task.team?.teamName?.toLowerCase().includes(search)
   );
+});
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'medium':
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      default:
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+    }
+  };
+
+  const handleTasks=(task)=>{
+    setopenModal(true);
+    setSegment(task);
+  }
 
   return (
   <div className="min-h-screen bg-white px-6 py-8">
@@ -134,7 +108,137 @@ function TaskBar() {
           </div>
         </div>
       </div>
-      
+
+       <div>
+      {filteredTasks.length === 0 ? (
+        <div className="bg-white shadow rounded-lg p-8 text-center">
+          <p className="text-gray-500">
+            No tasks found matching your search criteria.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-4 mt-4">
+          {filteredTasks.map((task) => (
+            <div
+              key={task.id}
+              className="bg-white shadow rounded-lg p-6 cursor-pointer hover:shadow-md transition-shadow"
+               onClick={()=>handleTasks(task)}
+              // onClick={()=>setopenModal(true)}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">{task.team.teamName}</h3>
+                      <p className="text-gray-500 text-sm mt-1">
+                        {task.instructions}
+                      </p>
+                    </div>
+                    <button
+                      className="flex items-center gap-2 bg-purple-600 text-white px-3 py-1 rounded-md text-sm hover:bg-purple-700 transition"
+                      onClick={() => {
+                           navigate('/workspace');
+                        // handleTaskClick(task);
+                      }}
+                    >
+                      <Play className="h-4 w-4" />
+                      Open Workspace
+                    </button>
+                  </div>
+
+                  {/* Assigned user + duration + due date */}
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-gray-400" />
+                      <span className="font-medium">{task.assignto}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-gray-400" />
+                      <span>{task.audio.length}{" "} Files</span>
+                    </div>
+                   <span>
+                        Date: {new Date(task.createdAt).toLocaleDateString("en-IN", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric"
+                        })}
+                      </span>
+                  </div>
+
+                  {/* Badges */}
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
+                        task.status
+                      )}`}
+                    >
+                      {task.status.replace("-", " ")}
+                    </span>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(
+                        task.priority
+                      )}`}
+                    >
+                      {task.priority} priority
+                    </span>
+                    <span className="flex items-center px-2 py-1 rounded border text-xs font-medium text-gray-700">
+                      <Crown className="text-yellow-500 w-4 h-4 mr-2"/>{task.team.leadName}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+    {openModal &&
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      {/* Modal Box */}
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pt-6 border-b pb-4">
+          <div className="flex items-center gap-2">
+            <Info className="text-blue-500" size={20} />
+            <h2 className="text-lg font-semibold">Task / Segment Details</h2>
+          </div>
+          <button
+            onClick={() => setopenModal(false)}
+            className="text-gray-500 hover:text-gray-700 cursor-pointer"
+          >
+            <X size={22} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-4 space-y-4">
+          <p className="text-sm text-gray-500">
+            Details for <strong>{segment.assignto}</strong>
+          </p>
+
+          <div className="border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">Overview</h3>
+            <div className="grid grid-cols-2 gap-y-2 text-sm">
+              <p><strong>Status:</strong> {segment.status}</p>
+              <p><strong>Instructions:</strong> {segment.instructions}</p>
+              <p><strong>Created:</strong> {new Date(segment.createdAt).toLocaleString()}</p>
+              <p><strong>Team:</strong> {segment.team?.teamName} ({segment.team?.station})</p>
+              <p><strong>City:</strong> {segment.team?.city}</p>
+            </div>
+          </div>
+
+          <div className="border rounded-lg p-4">
+            <h3 className="font-semibold mb-2">Audio Files</h3>
+            <ul className="list-disc list-inside text-sm">
+              {segment.audio?.map((file, i) => (
+                <li key={i}>{file}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+     }
     </div>
   );
 }

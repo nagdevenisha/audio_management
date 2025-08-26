@@ -8,35 +8,48 @@ import AudioWaveform from './WaveSurfer';
 
 
 export default function Workspace() {
-    const [file, setFile] = useState(null);
+    const [file, setFile] = useState([]);
     const [count, setCount] = useState(0);
-     const [recordings, setRecordings] = useState([]);
+     const [recordings, setRecordings] = useState("");
     const [loading, setLoading] = useState(false);
     const[audio,setAudio]=useState("");   
-    const[loader,setLoader]=useState(false);       
+    const[loader,setLoader]=useState({"loader1":false,"loader2":false});       
+    const[station,setStation]=useState("");
+    const[city,setCity]=useState("");
+    const[date,setDate]=useState("");
+    const[error,setError]=useState({recordError:"",fpError:""});
+    const[load,setLoad]=useState(false);
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+      setFile(Array.from(e.target.files));
   };
   
 
+    const api="https://backend-urlk.onrender.com";
+  // const api="http://localhost:3001";
   const handleUploads = async (e) => {
-    if (!file) return;
-
+     if (file.length===0) 
+    {
+      setError({recordError:"Please select files"});
+      return;
+    }
     setLoading(true);
     console.log(file)
     const formData = new FormData();
-    formData.append("file", file);
+    file.forEach((fil) => {
+    formData.append("files", fil); // 👈 must match backend field name
+  });
     formData.append("type", "recording");
 
     try {
-      const res = await axios.post("http://localhost:3001/upload", formData, {
+      const res = await axios.post(`${api}/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if(res.data) setLoading(false);
       console.log(res.data);
-      setAudio(res.data);
-      setRecordings((prev) => [...prev, res.data]); // add uploaded file info
+      setAudio(res.data.mergedFile);
+      setRecordings(res.data); // add uploaded file info
+      setFile([]);
     } catch (err) {
       console.error("Upload error:", err);
       alert("Upload failed");
@@ -45,18 +58,25 @@ export default function Workspace() {
     }
   };
   const handleUpload = async () => {
-    if (!file) return;
-    setLoader(true);
+    if (file.length===0) 
+    {
+      setError({fpError:"Please select files"});
+      return;
+    }
+    setError("");
+    setLoader({loader1:true});
     const formData = new FormData();
-    formData.append("masterFile", file);
+    file.forEach((files) => {
+     formData.append("masterFiles", files); // use same field name for array
+   });
     formData.append("type", "master");
 
-    const res=await axios.post("http://localhost:3001/api/master/upload",formData, {
+    const res=await axios.post(`${api}/api/master/upload`,formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    if(res.data) setLoader(false);
+    if(res.data) setLoader({loader1:false}); setFile([]);
     console.log(res.data);
-    setCount((prev) => prev + 1);
+    setCount(res.data.files.length);
   };
    
   const intervals = [];
@@ -66,10 +86,26 @@ export default function Workspace() {
     }
   }
   
+  const[data,setData]=useState([]);
   const handleMatching=async()=>{
+               
             try{
-                   const res=await axios.post("http://localhost:3001/audiomatching");
-                   console.log(res.data);
+                  //  const res=await axios.post("http://localhost:3001/audiomatching");
+                  //  console.log(res.data);
+                  const res=await axios.get(`${api}/app/getlabel`,{
+                    params:{
+                      city:city,
+                      station:station,
+                      date:date
+                    }
+                  });
+                  if(res.data)
+                  {
+                       console.log(res.data)
+                        setData(res.data);
+                        setLoad(true);
+                  }
+          
                }
             catch(err)
             {
@@ -77,7 +113,21 @@ export default function Workspace() {
                  
             }
   }
-
+  const handleclips=async()=>{
+    try{
+             setLoader({loader2:true});
+            const res=await axios.post(`${api}/app/minuteclip`,{audio:recordings.record.fileName});
+            console.log(res.data);
+            if(res.status)
+            {
+               setLoader({loader2:false});
+            }
+          }
+    catch(err)
+    {
+       console.log(err)
+    }
+  }
   return (
    <div className="min-h-screen bg-white px-6 py-8">
      <button
@@ -115,12 +165,13 @@ export default function Workspace() {
         <label className="block text-sm text-gray-700 mb-2">
           Choose city
         </label>
-        <select className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        <select className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"onChange={(e)=>setCity(e.target.value)}>
           <option value="">Select city...</option>
           <option value="mumbai">Mumbai</option>
           <option value="delhi">Delhi</option>
           <option value="bangalore">Bangalore</option>
           <option value="pune">Pune</option>
+          <option value="karnal">Karnal</option>
         </select>
       </div>
 
@@ -136,6 +187,7 @@ export default function Workspace() {
         <input
           type="date"
           className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          onChange={(e)=>setDate(e.target.value)}
         />
       </div>
 
@@ -148,12 +200,12 @@ export default function Workspace() {
         <label className="block text-sm text-gray-700 mb-2">
           Choose station
         </label>
-        <select className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        <select className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-purple-500" onChange={(e)=>setStation(e.target.value)}>
           <option value="">Select Radio Station</option>
-          <option value="Radio city">Radio city</option>
-          <option value="Red fm">Red fm</option>
-          <option value="Radio mirchi">Radio mirchi</option>
-          <option value="Radio Tadka">Radio Tadka</option>
+          <option value="radio-city">Radio City</option>
+          <option value="red-fm">Red Fm</option>
+          <option value="radio-mirchi">Radio Mirchi</option>
+          <option value="radio-tadka">Radio Tadka</option>
         </select>
       </div>
     </div>
@@ -166,13 +218,14 @@ export default function Workspace() {
           <Radio className="w-5 h-5 text-purple-600 mr-2" />
           <h2 className="text-lg font-semibold">Master Fingerprints</h2>
         </div>
+        {error.fpError && <p className='text-red-500'>*{error.fpError}</p>}
         <input
         type="file"
-        accept="audio/*"
+        multiple accept="audio/*"
         onChange={handleFileChange}
         className="mb-3"
       />
-       {loader &&  <div className="flex items-center justify-center py-10">
+       {loader.loader1 &&  <div className="flex items-center justify-center py-10">
             <Loader2 className="animate-spin text-blue-500 w-8 h-8" />
             <span className="ml-2 text-gray-600">Loading segment...</span>
           </div>}
@@ -188,11 +241,13 @@ export default function Workspace() {
           <Upload className="w-5 h-5 text-purple-600 mr-2" />
           <h2 className="text-lg font-semibold">Recordings</h2>
         </div>
+        {error.recordError && <p className='text-red-500'>*{error.recordError}</p>}
         <input
-        type="file"
-        id="recordingUpload"
-        accept="audio/*"
-        onChange={(e)=>setFile(e.target.files[0])}
+         type="file"
+          webkitdirectory="true"
+          directory=""
+          multiple
+          onChange={(e) => setFile(Array.from(e.target.files))}
          className="mb-3"
       />
       {loading &&  <div className="flex items-center justify-center py-10">
@@ -203,10 +258,11 @@ export default function Workspace() {
           <Upload className="w-4 h-4 mr-2" /> Add Recording
         </button>
         <p className="text-sm text-gray-500 mt-2">{recordings.length} recordings uploaded</p>
+        {recordings && <p className='font-semibold'>do you want to create 5 min clip? <span><button className='border border-gray-300 rounded-md p-3 hover:bg-gray-50 transition bg-green-200' onClick={handleclips}>Yes</button></span><button className='ml-4 border border-gray-300 rounded-md p-3 hover:bg-gray-50 transition bg-red-200'>No</button>{loader.loader2 && <Loader2 className="animate-spin text-blue-500 w-8 h-8" />}</p>}
       </div>
     </div>
     <div className='flex justify-center'>
-         <button className="px-8 py-2 bg-purple-500 text-white rounded mt-8 " >   {/*onClick={handleMatching} */}
+         <button className="px-8 py-2 bg-purple-500 text-white rounded mt-8 " onClick={handleMatching}>
     Audio Matching
   </button>
     </div>
@@ -216,30 +272,31 @@ export default function Workspace() {
 
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Header */}
+      {load &&
       <div className="bg-white p-6 rounded-2xl shadow-md mb-6">
         <h2 className="text-lg font-semibold mb-4">Audio Review Details</h2>
         <div className="grid grid-cols-4 gap-4">
           <div className="bg-purple-100 text-purple-800 p-4 rounded-xl text-center">
-            <p className="text-sm font-medium">Time Slot</p>
-            <p className="text-xl font-bold">08:00-09:00</p>
+            <p className="text-sm font-medium">Date</p>
+            <p className="text-xl font-bold">{date}</p>
           </div>
           <div className="bg-green-100 text-green-800 p-4 rounded-xl text-center">
             <p className="text-sm font-medium">Station</p>
-            <p className="text-xl font-bold">Radio XYZ, Mumbai</p>
+            <p className="text-xl font-bold">{station}, {city}</p>
           </div>
           <div className="bg-teal-100 text-teal-800 p-4 rounded-xl text-center">
-            <p className="text-sm font-medium">Fingerprint Matches</p>
-            <p className="text-xl font-bold">2</p>
+            <p className="text-sm font-medium">Fingerprint Uploaded</p>
+            <p className="text-xl font-bold">{count}</p>
           </div>
           <div className="bg-yellow-100 text-yellow-800 p-4 rounded-xl text-center">
             <p className="text-sm font-medium">Total Segments</p>
             <p className="text-xl font-bold">2</p>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Automatic Labeling */}
-     <div className="bg-white p-6 rounded-2xl shadow-md mb-6">
+     {load && <div className="bg-white p-6 rounded-2xl shadow-md mb-6">
   <h3 className="font-semibold mb-3">Automatic Labeling Results</h3>
   
   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -253,11 +310,23 @@ export default function Workspace() {
       📄 JSON Records
     </div>
   </div>
-</div>
+</div>}
         
-    <AudioWaveform audio={audio}/>
-    <Timeline audio={audio}/>
-    <SegmentList/>
+      {recordings && load &&(
+      <AudioWaveform
+        audio={audio} 
+        start={recordings.startTime} 
+        // end={recordings.endTime} 
+      />
+    )}
+
+   {recordings && load && (
+  <>
+    {console.log(recordings.startTime)}
+    <Timeline audio={audio} starts={recordings.startTime} data={data} date={date} city={city} station={station} />
+  </>
+)}
+    {/* <SegmentList/> */}
     <div className="flex justify-end">
   <button className="px-8 py-2 bg-purple-500 text-white rounded mt-8">
     Submit Changes

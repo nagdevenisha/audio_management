@@ -2,13 +2,17 @@ import  { useEffect, useRef, useState } from "react";
 import WaveSurfer from "wavesurfer.js"
 import {SkipBack, SkipForward} from 'lucide-react';
 
-export default function AudioWaveform({audio}) {
+export default function AudioWaveform({audio,start,end}) {
   const containerRef = useRef(null);
   const wavesurferRef = useRef(null);
   const [isReady, setIsReady] = useState(false);
-  const [currentTime, setCurrentTime] = useState("00:00:00");
-
-   const handleSkip = (seconds) => {
+ 
+  const timeToSeconds = (timeStr) => {
+  const parts = timeStr.split(":").map(Number);
+  return (parts[0] || 0) * 3600 + (parts[1] || 0) * 60 + (parts[2] || 0);
+};
+const startOffset = timeToSeconds(start);
+  const handleSkip = (seconds) => {
   if (!wavesurferRef.current) return;
 
   const ws = wavesurferRef.current;
@@ -21,6 +25,7 @@ export default function AudioWaveform({audio}) {
   if (newTime > duration) newTime = duration;
 
   ws.setTime(newTime);
+  setCurrentTime(formatTime(newTime+startOffset));
 };
 
   const intervals = [];
@@ -37,9 +42,9 @@ export default function AudioWaveform({audio}) {
     return `${h}:${m}:${s}`;
   };
 
+ const [currentTime, setCurrentTime] = useState(formatTime(timeToSeconds(start)));
   useEffect(() => {
     if (!containerRef.current) return;
-
     // Create WaveSurfer
     const ws = WaveSurfer.create({
       container: containerRef.current,
@@ -51,26 +56,27 @@ export default function AudioWaveform({audio}) {
       backend: "MediaElement", 
       mediaControls: false, 
     });
-  console.log(audio.filePath);
+  console.log(audio);
     const fakePeaks = new Array(2000).fill(0).map(() => Math.random() * 2 - 1);
     // Important: wait a tick before loading (fix AbortError)
-     if (audio?.filePath) {
-      ws.load(audio.filePath,fakePeaks);
+     if (audio) {
+      ws.load(audio,fakePeaks);
     }
 
     ws.on("ready", () => {
       console.log("✅ Waveform loaded");
       setIsReady(true);
+      ws.setTime(0); // start of audio file
+      setCurrentTime(formatTime(startOffset));
     });
 
-     ws.on("audioprocess", (time) => {
-      setCurrentTime(formatTime(time));
+      ws.on("audioprocess", (time) => {
+      setCurrentTime(formatTime(time+startOffset));
     });
-
     // when seeking, also update time immediately
     ws.on("seek", (progress) => {
       const duration = ws.getDuration();
-      setCurrentTime(formatTime(progress * duration));
+      setCurrentTime(formatTime(progress * duration+startOffset));
     });
 
     wavesurferRef.current = ws;

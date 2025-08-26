@@ -1,9 +1,40 @@
-import React,{useState,useRef} from "react";
-import { Info, Play, X } from "lucide-react";
+import React,{useState,useRef, useEffect} from "react";
+import { Info, Play, X, RefreshCcwDot} from "lucide-react";
 import EditModal from "./EditModal";
 import axios from "axios";
+import segments from './Segment.json';
+import UnlabelledData from "./UnlabelledData";
 
-export default function Timeline({audio}) {
+
+export default function Timeline({audio,starts,data,date,city,station}) {
+const allGapsTemp = [];
+let allStartsGapLength="";
+const typeColors = {
+  jingle: "bg-yellow-300",
+  program: "bg-blue-300",
+  advertisement: "bg-red-300",
+  song: "bg-green-300",
+};
+
+    const api="https://backend-urlk.onrender.com";
+  // const api="http://localhost:3001";
+useEffect(() => {
+    const handleSegmentSelected = () => {
+      const item = localStorage.getItem("selectedSegment");
+      if (item) {
+        setSelectedSegment(JSON.parse(item));
+        setIsModalOpen(true);
+      }
+    };
+
+    // listen to custom event
+    window.addEventListener("segmentSelected", handleSegmentSelected);
+
+    return () => {
+      window.removeEventListener("segmentSelected", handleSegmentSelected);
+    };
+  }, []);
+
   // Generate 15-min intervals
   const intervals = [];
   for (let h = 0; h < 24; h++) {
@@ -15,39 +46,19 @@ export default function Timeline({audio}) {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({});
+  const[greyblock,setGreyBlock]=useState(false);
   const[file,setFile]=useState("");
-    const audioRef = useRef(null);
-  const segments = [
-  {
-    id: "Ad_1",
-    label: "Brand XYZ Product Launch",
-    type: "Advertisement",
-    status: "auto-labelled",
-    start: "08:15:30",
-    end: "08:16:54",
-    confidence: "98.5%",
-    title: "Brand XYZ Product Launch",
-    campaign: "Summer Sale 2025",
-    advertiser: "Brand XYZ Corp",
-    detectionMethod: "Fingerprint Matching",
-  },
-  {
-    id: "Song_1",
-    label: "Bollywood Hit Song",
-    type: "Music",
-    status: "auto-labelled",
-    start: "00:18:40",
-    end: "00:20:45",
-    confidence: "99.1%",
-    campaign: null,
-    title: "Bollywood Hit Song",
-    advertiser: null,
-    detectionMethod: "Audio Match",
-  },
-];
- const dataBlocks = segments.map(seg => ({
+  const[files,setFiles]=useState("");
+  const[slotStart,setSlotStart]=useState("");
+  const[slotEnd,setSlotEnd]=useState("");
+  const audioRef = useRef(null);
+  const [records, setRecords] = useState(() => data || []);
+  const [detail, setDetail] = useState([]);     
+  const[error,setError]=useState('');
+
+ const dataBlocks = records.map(seg => ({
   ...seg, // keep all properties
-  label: seg.label.charAt(0) + "..." // short label for the bar
+  label: seg.program.charAt(0) + "..." // short label for the bar
 }));
 
 const handleBarClick = (segment) => {
@@ -56,17 +67,20 @@ const handleBarClick = (segment) => {
 };
   
     const timeToSeconds = (time) => {
-    const [h, m] = time.split(":").map(Number);
-    return h * 3600 + m * 60;
+    const [h, m, s = 0] = time.split(":").map(Number); // default s=0
+  return h * 3600 + m * 60 + s;
   };
 const handleAudio = async(start, end) => {
   console.log(audio);
+  console.log(starts);
   console.log(start,end);
-    const response = await axios.get("http://localhost:3001/clip", {
+  try{
+    const response = await axios.get(`${api}/clips`, {
       params: {
-        filePath: audio.filePath,  // full path or relative name
+        filePath: audio,  // full path or relative name
         startTime: start,
         endTime: end,
+        mergedStart:starts
       },
       responseType: "blob", // 👈 important for audio
     });
@@ -74,7 +88,8 @@ const handleAudio = async(start, end) => {
     // Convert blob to URL
     const audioBlob = new Blob([response.data], { type: "audio/mp3" });
     const audioUrl = URL.createObjectURL(audioBlob);
-    setFile(audioUrl); // <-- ensures <audio src={file} /> is visible
+    setFiles(audioUrl); // <-- ensures <audio src={file} /> is visible
+    setError('');
 
     if (audioRef.current) {
       audioRef.current.onloadedmetadata = () => {
@@ -84,15 +99,84 @@ const handleAudio = async(start, end) => {
         });
       };
     }
+  }
+  catch(err)
+  {
+     setError("Audio Not Available");
+     console.log(err);
+  }
 };
 
+const handleGreyBlock = async (gap) => {
+  // gap already has start & end in seconds
+  const startSec = gap.start;
+  const endSec = gap.end;
+
+  // format back to HH:MM:SS
+  const formatTime = (sec) => {
+    const h = String(Math.floor(sec / 3600)).padStart(2, "0");
+    const m = String(Math.floor((sec % 3600) / 60)).padStart(2, "0");
+    const s = String(sec % 60).padStart(2, "0");
+    return `${h}:${m}:${s}`;
+  };
+
+  const startTime = formatTime(startSec);
+  const endTime = formatTime(endSec);
+
+  console.log("Grey Clip:", startTime, "->", endTime);
+
+  try {
+    const response = await axios.get(`${api}/clips`, {
+      params: {
+        filePath: audio,
+        startTime,
+        endTime,
+        mergedStart: starts, // if you need original merged clip start
+      },
+      responseType: "blob",
+    });
+
+    const audioBlob = new Blob([response.data], { type: "audio/mp3" });
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    if (response.data) {
+      setGreyBlock(true);
+      setSlotStart(startTime);
+      setSlotEnd(endTime);
+      setFile(audioUrl);
+    }
+  } catch (err) {
+    console.error("Clip fetch error", err);
+  }
+};
+ 
+const handleRecords=async()=>{
+  try{
+        console.log(data);
+        const res=await axios.get(`${api}/app/getlabel`,{
+          params:{
+             city:city,
+             date:date,
+             station:station
+          }
+        });
+        setDetail(res.data);       // store fetched data
+        setRecords(res.data);  
+
+  }
+  catch(err)
+  {
+     console.log(err);
+  }
+}
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-md w-full">
+      <RefreshCcwDot className="w-5 h-5 text-purple-600" onClick={handleRecords}/>
       <div className="flex justify-between items-center mb-2">
         <h3 className="font-semibold text-sm">24-Hour Timeline Grid</h3>
         <span className="text-xs text-red-600 border border-red-300 px-2 py-0.5 rounded-full">
-          4 Total Fingerprint Matches
+         {segments.length}{" "}Total Fingerprint Matches
         </span>
       </div>
 
@@ -108,53 +192,134 @@ const handleAudio = async(start, end) => {
             </div>
           ))}
         </div>
-
+          
         {/* Bottom Data Bar */}
         <div className="relative flex">
-          {intervals.map((slotStart, idx) => {
-            const [sh, sm] = slotStart.split(":").map(Number);
-            const slotStartSec = sh * 3600 + sm * 60;
-            const slotEndSec = slotStartSec + 15 * 60;
-            const slotBlocks = dataBlocks.filter((block) => {
-              const startSec = timeToSeconds(block.start);
-              return startSec >= slotStartSec && startSec < slotEndSec;
-            });
+    {intervals.map((slotStart, idx) => {
+    const [sh, sm] = slotStart.split(":").map(Number);
+    const slotStartSec = sh * 3600 + sm * 60;
+    const slotEndSec = slotStartSec + 15 * 60;
 
-            return (
-              <div
-                key={idx}
-                className="relative min-w-[240px] h-20 border-r border-gray-200 bg-gray-100"
-              >
-                {slotBlocks.map((block, i) => {
-                  const blockStartSec = timeToSeconds(block.start);
-                  const blockEndSec = timeToSeconds(block.end);
-                  const slotDurationSec = slotEndSec - slotStartSec;
-                  const slotWidthPx = 240;
+    // ✅ Pick green blocks overlapping this slot
+    const slotBlocks = dataBlocks.filter((block) => {
+      const startSec = timeToSeconds(block.start);
+      const endSec = timeToSeconds(block.end);
+      return startSec < slotEndSec && endSec > slotStartSec;
+    });
 
-                  const leftPx =
-                    ((blockStartSec - slotStartSec) / slotDurationSec) * slotWidthPx;
-                  const widthPx =
-                    ((blockEndSec - blockStartSec) / slotDurationSec) * slotWidthPx;
+    // ✅ Compute gaps for this slot
+    const gaps = [];
+    const sortedBlocks = [...slotBlocks].sort(
+      (a, b) => timeToSeconds(a.start) - timeToSeconds(b.start)
+    );
 
-                  return (
-                    <div
-                      key={i}
-                      className="absolute top-0 h-full bg-green-500 text-white text-[10px] flex items-center justify-center rounded-sm"
-                      style={{
-                        left: `${leftPx}px`,
-                        width: `${Math.max(widthPx, 2)}px`,
-                      }}
-                      onClick={() => handleBarClick(block)}
-                    >
-                      {block.label}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
-        </div>
+    // 1. Gap before the first block (inside this slot)
+    if (sortedBlocks.length > 0 && timeToSeconds(sortedBlocks[0].start) > slotStartSec) {
+      gaps.push({
+        start: slotStartSec,
+        end: timeToSeconds(sortedBlocks[0].start),
+      });
+    }
+
+    // 2. Gaps between blocks
+    for (let i = 0; i < sortedBlocks.length - 1; i++) {
+      const currEnd = timeToSeconds(sortedBlocks[i].end);
+      const nextStart = timeToSeconds(sortedBlocks[i + 1].start);
+      if (currEnd < nextStart) {
+        gaps.push({ start: currEnd, end: nextStart });
+      }
+    }
+
+    // 3. Gap after last block (inside this slot)
+    if (
+      sortedBlocks.length > 0 &&
+      timeToSeconds(sortedBlocks[sortedBlocks.length - 1].end) < slotEndSec
+    ) {
+      gaps.push({
+        start: timeToSeconds(sortedBlocks[sortedBlocks.length - 1].end),
+        end: slotEndSec,
+      });
+    }
+
+    // 4. If slot has NO blocks at all, whole slot is grey
+    if (sortedBlocks.length === 0) {
+      gaps.push({ start: slotStartSec, end: slotEndSec });
+    }
+  allGapsTemp.push(...gaps);
+  const startHour = Number(starts.split(":")[0]); // e.g., 06 → 6
+  const startSlotIndex = startHour * 4; // each hour has 4 slots of 15 min
+  allStartsGapLength = (startSlotIndex - allGapsTemp.length);
+
+
+    return (
+      <div
+        key={idx}
+        className="relative min-w-[240px] h-20 border-r border-gray-200 bg-gray-100 cursor-pointer"
+      >
+        {/* ✅ Grey Gaps */}
+        {gaps.map((gap, i) => {
+          const slotDurationSec = slotEndSec - slotStartSec;
+          const slotWidthPx = 240;
+
+          const leftPx = ((gap.start - slotStartSec) / slotDurationSec) * slotWidthPx;
+          const widthPx = ((gap.end - gap.start) / slotDurationSec) * slotWidthPx;
+
+          return (
+            <div
+              key={`gap-${i}`}
+              className="absolute top-0 h-full bg-gray-400 opacity-60 cursor-pointer"
+              style={{
+                left: `${leftPx}px`,
+                width: `${Math.max(widthPx, 2)}px`,
+              }}
+              onClick={(e) => {
+                e.stopPropagation(); // prevent slot click
+                handleGreyBlock(gap); // 🔥 pass gap details
+              }}
+            />
+          );
+        })}
+
+        {/* ✅ Green Blocks */}
+        {slotBlocks.map((block, i) => {
+          const startSec = timeToSeconds(block.start);
+          const endSec = timeToSeconds(block.end);
+
+          const blockStartSec = Math.max(startSec, slotStartSec);
+          const blockEndSec = Math.min(endSec, slotEndSec);
+
+          const slotDurationSec = slotEndSec - slotStartSec;
+          const slotWidthPx = 240;
+
+          const leftPx =
+            ((blockStartSec - slotStartSec) / slotDurationSec) * slotWidthPx;
+          const widthPx =
+            ((blockEndSec - blockStartSec) / slotDurationSec) * slotWidthPx;
+            console.log(block);
+
+          return (
+            <div
+              key={`block-${i}`}
+              className={`absolute top-0 h-full ${typeColors[block.type]} text-white text-[10px] flex items-center justify-center rounded-sm`}
+              style={{
+                left: `${leftPx}px`,
+                width: `${Math.max(widthPx, 2)}px`,
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleBarClick(block);
+              }}
+            >
+              {block.label}
+            </div>
+          );
+        })}
+      </div>
+    );
+  })}
+</div>
+</div>
+
         <div className="flex items-center gap-6 mb-4 mt-4">
             {/* Matching Segments */}
             <div className="flex items-center gap-2">
@@ -165,13 +330,17 @@ const handleAudio = async(start, end) => {
             {/* No Content */}
             <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-gray-300 rounded-sm"></div>
-                <span className="text-sm text-gray-700 font-medium">No Content</span>
+                <span className="text-sm text-gray-700 font-medium" 
+                >No Content</span>
             </div>
             </div>
         <h4 className="flex items-center gap-2 font-medium text-green-700 mb-2">
-          ✅ Matching Segments ({segments.length})
+          ✅ Matching Segments ({data.length})
         </h4>
-        {segments.map((seg, idx) => (
+          <h4 className="flex items-center gap-2 font-medium text-green-700 mb-2">
+          ❌ UnMatched Segments ({-allStartsGapLength})
+        </h4>
+        {/* {segments.map((seg, idx) => (
           <div
             key={idx}
             className="flex justify-between items-center bg-green-50 border border-green-200 rounded-lg p-3 mb-2"
@@ -182,16 +351,15 @@ const handleAudio = async(start, end) => {
                 <span>-</span>
                 <span className="font-mono">{seg.end}</span>
               </div>
-              {/* <p className="text-sm font-medium text-gray-800">{seg.title}</p> */}
             </div>
             <div className="flex items-center gap-2">
               <span className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded-full">
-                {seg.label}
+                {seg.program}
               </span>
               <span className="text-xs text-gray-500">{seg.confidence}</span>
             </div>
           </div>
-        ))}
+        ))} */}
         {isModalOpen && selectedSegment && (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg w-[700px] shadow-lg overflow-hidden">
@@ -206,7 +374,11 @@ const handleAudio = async(start, end) => {
 
         {/* Right side: Close button */}
         <button
-          onClick={() => setIsModalOpen(false)}
+          onClick={() => {
+            setIsModalOpen(false);
+            setFiles("");
+            localStorage.removeItem("selectedSegment");
+          }}
           className="text-gray-500 hover:text-gray-700 cursor-pointer"
         >
           <X size={22} />
@@ -223,17 +395,17 @@ const handleAudio = async(start, end) => {
             <h3 className="font-semibold">Segment Overview</h3>
           </div>
           <div className="grid grid-cols-3 gap-y-2">
-            <p><strong>Label:</strong> {selectedSegment.label}</p>
-            <p><strong>Type:</strong> {selectedSegment.type}</p>
+            <p><strong>Channel:</strong>{selectedSegment.channel}</p>
+            <p><strong>Region:</strong> {selectedSegment.region}</p>
             <p>
-              <strong>Status:</strong>{" "}
+              <strong>Type:</strong>{" "}
               <span className="bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full">
-                {selectedSegment.status}
+                {selectedSegment.type}
               </span>
             </p>
             <p>
               <strong>Confidence:</strong>{" "}
-              <span className="text-green-600">{selectedSegment.confidence}%</span>
+              <span className="text-green-600">75%</span>
             </p>
             <p><strong>Start Time:</strong> {selectedSegment.start}</p>
             <p><strong>End Time:</strong> {selectedSegment.end}</p>
@@ -244,8 +416,7 @@ const handleAudio = async(start, end) => {
         <div className="border rounded-lg mx-6 mb-4 p-4">
           <h3 className="font-semibold mb-2">Content Details</h3>
           <div className="grid grid-cols-2">
-            <p><strong>Campaign:</strong> {selectedSegment.campaign || "-"}</p>
-            <p><strong>Advertiser:</strong> {selectedSegment.advertiser || "-"}</p>
+            <p><strong>Program:</strong> {selectedSegment.program || "-"}</p>
           </div>
         </div>
 
@@ -253,14 +424,14 @@ const handleAudio = async(start, end) => {
         <div className="border rounded-lg mx-6 mb-6 p-4">
           <h3 className="font-semibold mb-2">Analysis Information</h3>
           <div className="grid grid-cols-2">
-            <p><strong>Detection Method:</strong> {selectedSegment.detectionMethod}</p>
+            <p><strong>Detection Method:</strong>Autolabelled</p>
             <p><strong>Clip ID:</strong> {selectedSegment.id}</p>
           </div>
         </div>
-        {file &&  <div className="mt-4 flex justify-center mb-4">
+        {files &&  <div className="mt-4 flex justify-center mb-4">
           <audio 
             ref={audioRef} 
-            src={file} 
+            src={files} 
             controls 
             className="w-full max-w-md"
           />
@@ -287,14 +458,20 @@ const handleAudio = async(start, end) => {
           </button>
       </div>
     </div>
+   
   </div>
     )}
-   <EditModal open={editModalOpen}
+         <EditModal open={editModalOpen}
          setOpen={setEditModalOpen}
          editFormData={editFormData}
          setEditFormData={setEditFormData}
+         audio={files}
          onSave={() => console.log("Saved:", editFormData)}/>
+
+            {
+              greyblock && <UnlabelledData open={greyblock} setOpen={setGreyBlock} slotStart={slotStart} slotEnd={slotEnd} audio={file}/>
+            }
+    
       </div>
-  
   );
 }

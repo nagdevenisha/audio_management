@@ -29,7 +29,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-           <Route path="/taskbar"  element={
+          <Route path="/taskbar"  element={
               <ProtectedRoute roles={["Member"]}>
                 <TaskBar/>
               </ProtectedRoute>
@@ -43,7 +43,7 @@ function App() {
             } 
           />
           <Route path="*" element={<NotFound />} />
-          <Route path="/workspace" element={<Workspace/>}></Route>
+            <Route path="/workspace" element={<Workspace/>}></Route>
         </Routes>
       </BrowserRouter>
     </div>
