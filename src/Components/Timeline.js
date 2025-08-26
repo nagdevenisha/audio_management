@@ -299,7 +299,7 @@ const handleRecords=async()=>{
           return (
             <div
               key={`block-${i}`}
-              className={`absolute top-0 h-full ${typeColors[block.type]} text-white text-[10px] flex items-center justify-center rounded-sm`}
+              className="absolute top-0 h-full bg-green-500 text-white text-[10px] flex items-center justify-center rounded-sm"
               style={{
                 left: `${leftPx}px`,
                 width: `${Math.max(widthPx, 2)}px`,
