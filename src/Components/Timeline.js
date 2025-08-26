@@ -2,7 +2,6 @@ import React,{useState,useRef, useEffect} from "react";
 import { Info, Play, X, RefreshCcwDot} from "lucide-react";
 import EditModal from "./EditModal";
 import axios from "axios";
-import segments from './Segment.json';
 import UnlabelledData from "./UnlabelledData";
 
 
@@ -176,7 +175,7 @@ const handleRecords=async()=>{
       <div className="flex justify-between items-center mb-2">
         <h3 className="font-semibold text-sm">24-Hour Timeline Grid</h3>
         <span className="text-xs text-red-600 border border-red-300 px-2 py-0.5 rounded-full">
-         {segments.length}{" "}Total Fingerprint Matches
+         {records.length}{" "}Total Fingerprint Matches
         </span>
       </div>
 
