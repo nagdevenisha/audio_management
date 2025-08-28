@@ -25,8 +25,8 @@ export default function Workspace() {
   };
   
 
-    const api="https://backend-fj48.onrender.com";
-  // const api="http://localhost:3001";
+    // const api="https://backend-urlk.onrender.com";
+  const api="http://localhost:3001";
   const handleUploads = async (e) => {
      if (file.length===0) 
     {
