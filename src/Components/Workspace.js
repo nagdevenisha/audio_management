@@ -17,17 +17,25 @@ export default function Workspace() {
     const[station,setStation]=useState("");
     const[city,setCity]=useState("");
     const[date,setDate]=useState("");
-    const[error,setError]=useState({recordError:"",fpError:""});
+    const[error,setError]=useState({recordError:"",fpError:"",labelError:""});
     const[load,setLoad]=useState(false);
+
+//  const api="https://backend-fj48.onrender.com";
+   const api="http://localhost:3001";
 
   const handleFileChange = (e) => {
       setFile(Array.from(e.target.files));
   };
   
 
-    const api="https://backend-urlk.onrender.com";
-  // const api="http://localhost:3001";
   const handleUploads = async (e) => {
+
+    if(!city || !date || !station)
+    {
+       setError({labelError:"Please select date/city/station"});
+       return;
+    }
+    setError({labelError:""});
      if (file.length===0) 
     {
       setError({recordError:"Please select files"});
@@ -37,7 +45,10 @@ export default function Workspace() {
     console.log(file)
     const formData = new FormData();
     file.forEach((fil) => {
-    formData.append("files", fil); // 👈 must match backend field name
+    formData.append("files", fil); 
+    formData.append("city",city);
+    formData.append("date",date);
+    formData.append("station",station);
   });
     formData.append("type", "recording");
 
@@ -58,6 +69,12 @@ export default function Workspace() {
     }
   };
   const handleUpload = async () => {
+     if(!city || !date || !station)
+    {
+       setError({labelError:"Please select date/city/station"});
+       return;
+    }
+    setError({labelError:""});
     if (file.length===0) 
     {
       setError({fpError:"Please select files"});
@@ -71,7 +88,7 @@ export default function Workspace() {
    });
     formData.append("type", "master");
 
-    const res=await axios.post(`${api}/api/master/upload`,formData, {
+    const res=await axios.post("http://localhost:3001/api/master/upload",formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     if(res.data) setLoader({loader1:false}); setFile([]);
@@ -92,7 +109,7 @@ export default function Workspace() {
             try{
                   //  const res=await axios.post("http://localhost:3001/audiomatching");
                   //  console.log(res.data);
-                  const res=await axios.get(`${api}/app/getlabel`,{
+                  const res=await axios.get("http://localhost:3001/app/getlabel",{
                     params:{
                       city:city,
                       station:station,
@@ -116,7 +133,7 @@ export default function Workspace() {
   const handleclips=async()=>{
     try{
              setLoader({loader2:true});
-            const res=await axios.post(`${api}/app/minuteclip`,{audio:recordings.record.fileName});
+            const res=await axios.post('http://localhost:3001/app/minuteclip',{audio:recordings.record.fileName});
             console.log(res.data);
             if(res.status)
             {
@@ -261,6 +278,7 @@ export default function Workspace() {
         {recordings && <p className='font-semibold'>do you want to create 5 min clip? <span><button className='border border-gray-300 rounded-md p-3 hover:bg-gray-50 transition bg-green-200' onClick={handleclips}>Yes</button></span><button className='ml-4 border border-gray-300 rounded-md p-3 hover:bg-gray-50 transition bg-red-200'>No</button>{loader.loader2 && <Loader2 className="animate-spin text-blue-500 w-8 h-8" />}</p>}
       </div>
     </div>
+    {error.labelError && <p className='text-red-500'>{error.labelError}</p>}
     <div className='flex justify-center'>
          <button className="px-8 py-2 bg-purple-500 text-white rounded mt-8 " onClick={handleMatching}>
     Audio Matching
