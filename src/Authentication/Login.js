@@ -34,6 +34,7 @@ export default function Login() {
         {
            localStorage.setItem("token", res.data.token);
             const decoded = jwtDecode(res.data.token);
+            console.log(decoded.role);
            alert("✅ Login Successful");
            if (decoded.role === "admin") {
           navigate("/dashboard");
@@ -41,7 +42,21 @@ export default function Login() {
           localStorage.setItem("data",username);
           navigate("/teams");
         } else if (decoded.role === "Member") { 
-          navigate("/taskbar");
+          try{
+               const getdata=async()=>{
+                  const res=await axios.get(`${api}/app/alltasks`);
+                  console.log(res.data);
+                  if(res.data)
+                  {
+                      navigate("/taskbar",{state:{data:res.data}});
+                  }
+               }
+               getdata();
+          }
+          catch(err)
+          {
+             console.log(err)
+          }
         }
 
       }

@@ -20,7 +20,7 @@ export default function Workspace() {
     const[error,setError]=useState({recordError:"",fpError:"",labelError:""});
     const[load,setLoad]=useState(false);
 
- const api="https://backend-fj48.onrender.com";
+ const api="https://backend-urlk.onrender.com";
   //  const api="http://localhost:3001";
 
   const handleFileChange = (e) => {
@@ -88,7 +88,7 @@ export default function Workspace() {
    });
     formData.append("type", "master");
 
-    const res=await axios.post("http://localhost:3001/api/master/upload",formData, {
+    const res=await axios.post(`${api}/api/master/upload`,formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     if(res.data) setLoader({loader1:false}); setFile([]);
@@ -109,7 +109,7 @@ export default function Workspace() {
             try{
                   //  const res=await axios.post("http://localhost:3001/audiomatching");
                   //  console.log(res.data);
-                  const res=await axios.get("http://localhost:3001/app/getlabel",{
+                  const res=await axios.get(`${api}/app/getlabel`,{
                     params:{
                       city:city,
                       station:station,
@@ -133,7 +133,7 @@ export default function Workspace() {
   const handleclips=async()=>{
     try{
              setLoader({loader2:true});
-            const res=await axios.post('http://localhost:3001/app/minuteclip',{audio:recordings.record.fileName});
+            const res=await axios.post(`${api}/app/minuteclip`,{audio:recordings.record.fileName});
             console.log(res.data);
             if(res.status)
             {
