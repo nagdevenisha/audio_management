@@ -152,7 +152,7 @@ const handleFileChange = (e) => {
           </div>
            <div>
             <p className="text-500 font-semibold">Workspace</p>
-            <button className=' bg-purple-500 rounded-full w-30 px-2 py-1 '  onClick={() => navigate("/workspace")}>Start Work</button>
+            <button className=' bg-purple-500 rounded-full w-30 px-2 py-1 '  onClick={() => ((team.teamName==="Quality Team"?navigate("/workspace"):navigate('/labelling')))}>Start Work</button>
           </div>
         </div>
       </div>}
