@@ -44,6 +44,7 @@ function App() {
           />
           <Route path="*" element={<NotFound />} />
             <Route path="/workspace" element={<Workspace/>}></Route>
+             <Route path="/labelling" element={<Labellingworkspace/>}></Route>
         </Routes>
       </BrowserRouter>
     </div>
