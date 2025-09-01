@@ -20,8 +20,8 @@ export default function Workspace() {
     const[error,setError]=useState({recordError:"",fpError:"",labelError:""});
     const[load,setLoad]=useState(false);
 
- const api="https://backend-urlk.onrender.com";
-  //  const api="http://localhost:3001";
+//  const api="https://backend-urlk.onrender.com";
+   const api="http://localhost:3001";
 
   const handleFileChange = (e) => {
       setFile(Array.from(e.target.files));
@@ -133,7 +133,7 @@ export default function Workspace() {
   const handleclips=async()=>{
     try{
              setLoader({loader2:true});
-            const res=await axios.post(`${api}/app/minuteclip`,{audio:recordings.record.fileName});
+             const res=await axios.post(`${api}/app/minuteclip`,{audio:recordings.record.filePath,city:city,date:date,station:station});
             console.log(res.data);
             if(res.status)
             {
