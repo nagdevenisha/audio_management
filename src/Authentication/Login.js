@@ -36,7 +36,7 @@ export default function Login() {
             const decoded = jwtDecode(res.data.token);
             console.log(decoded.role);
            alert("✅ Login Successful");
-           if (decoded.role === "admin") {
+            if (decoded.role === "Admin") {
           navigate("/dashboard");
         } else if (decoded.role === "Team Lead") {
           localStorage.setItem("data",username);
