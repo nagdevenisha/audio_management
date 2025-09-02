@@ -1,13 +1,13 @@
 import {useEffect, useState} from 'react';
 import {ChevronLeft,Crown,Search} from "lucide-react";
-import { Play, User, Clock ,Info,X,FileText} from "lucide-react";
+import { Play, User, Clock ,Info,X,FileText,Download} from "lucide-react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function TaskBar() {
 
 
-    const api="https://backend-fj48.onrender.com";
+    const api="https://backend-urlk.onrender.com";
   //  const api="http://localhost:3001";
    const [searchTerm, setSearchTerm] = useState("");
    const[openModal,setopenModal]=useState(false);
@@ -18,6 +18,7 @@ function TaskBar() {
   useEffect(()=>{
          if (location.state?.data) {
         setTasks(location.state.data);
+        console.log(location.state.data);
   }
 
   },[location.state]);
@@ -137,7 +138,7 @@ function TaskBar() {
                     <button
                       className="flex items-center gap-2 bg-purple-600 text-white px-3 py-1 rounded-md text-sm hover:bg-purple-700 transition"
                       onClick={() => {
-                           navigate('/workspace');
+                           navigate('/labelling');
                         // handleTaskClick(task);
                       }}
                     >
@@ -230,10 +231,22 @@ function TaskBar() {
           <div className="border rounded-lg p-4">
             <h3 className="font-semibold mb-2">Audio Files</h3>
             <ul className="list-disc list-inside text-sm">
-              {segment.audio?.map((file, i) => (
-                <li key={i}>{file}</li>
-              ))}
-            </ul>
+            {segment.audio?.map((file, i) => {
+              const filename = encodeURIComponent(file); // decode URL
+              return (
+                <li key={i} className="flex items-center justify-between border rounded p-2 my-1">
+                  <span>{file}</span>
+                  <a
+                    href={`${api}/uploads/${filename}`} // path where audio is stored
+                    download
+                    className="hover:text-gray-700 bg-red-500 p-1 rounded"
+                  >
+                    <Download />
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
           </div>
         </div>
       </div>
