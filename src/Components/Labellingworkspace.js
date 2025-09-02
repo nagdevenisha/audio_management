@@ -28,8 +28,8 @@ export default function Labellingworkspace() {
 
   });
  
-  // const api="https://backend-fj48.onrender.com";
-  const api="http://localhost:3001";
+  const api="https://backend-urlk.onrender.com";
+  // const api="http://localhost:3001";
 const startOffset = 0;
   const handleSkip = (seconds) => {
   if (!wavesurferRef.current) return;
@@ -104,7 +104,7 @@ const startOffset = 0;
 const submitMetadata=async()=>{
   try{ 
          console.log(meta);
-           if(!meta.channel || !meta.contentType || !meta.duration || !meta.endtime || !meta.starttime || !meta.program || !meta.date || meta.city) {
+           if(!meta.channel || !meta.contentType || !meta.duration || !meta.endtime || !meta.starttime || !meta.program || !meta.date || !meta.city) {
              setError('Enter All Fields');
              return;
            };
