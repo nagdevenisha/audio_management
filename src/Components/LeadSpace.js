@@ -68,47 +68,47 @@ const handleFileChange = (e) => {
   console.log(fileNames);
   
 };
-  const handleTask=async()=>{
-         if(!memberassign && !instructions && !file) { setError("*Fill All Fields*");
-          return;
-         }
-         const task={
-            assignto:memberassign,
-            instructions:instructions,
-            audio:[file]
-         }
-  
-         console.log(task);
-         setError('');
-           try{
-                 const res = await axios.post(`${api}/app/tasks`, {
-                  leadName: team.leadName,
-                  teamName: team.teamName,
-                  station: team.station,
-                  city: team.city,
-                  tasks: task
-                });
-                if(res.status===200)
-                 {
-                  console.log(res.data);
-                  const formattedTasks = res.data.map(task => ({
-                  file: task.audio,
-                  station: task.team.station,
-                  assignedTo: task.assignto,
-                  time: timeAgo(task.createdAt),
-                  instructions: task.instructions,
-                  createdAt:task.createdAt
-                }));
-                     console.log(formattedTasks)
-                  setTasks(formattedTasks,); 
-              }
-
-           }
-           catch(err)
-           {
-             console.log(err);
-           }
+    const handleTask = async () => {
+  if (!memberassign || !instructions || !files || files.length === 0) {
+    setError("*Fill All Fields*");
+    return;
   }
+
+  setError('');
+
+  try {
+    const formData = new FormData();
+
+    // Append all files
+    files.forEach(file => formData.append("audio", file));
+
+    // Append other metadata
+    formData.append("assignto", memberassign);
+    formData.append("instructions", instructions);
+    formData.append("leadName", team.leadName);
+    formData.append("teamName", team.teamName);
+    formData.append("station", team.station);
+    formData.append("city", team.city);
+     console.log(formData);
+    const res = await axios.post(`${api}/app/tasks`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    if (res.status === 200) {
+      const formattedTasks = res.data.map(task => ({
+        file: task.audio,
+        station: task.team.station,
+        assignedTo: task.assignto,
+        time: timeAgo(task.createdAt),
+        instructions: task.instructions,
+        createdAt: task.createdAt,
+      }));
+      setTasks(formattedTasks);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
 
   return (
     <div>
