@@ -15,6 +15,7 @@ function TaskBar() {
    const[segment,setSegment]=useState([]);
    const navigate=useNavigate();
    const location=useLocation();
+   const[downloadurl,setDownloadUrl]=useState('');
   useEffect(()=>{
          if (location.state?.data) {
         setTasks(location.state.data);
@@ -59,6 +60,25 @@ function TaskBar() {
   const handleTasks=(task)=>{
     setopenModal(true);
     setSegment(task);
+  }
+
+
+  const handleDownload=async(file)=>{
+       try{
+            const res = await axios.get(`${api}/app/download?key=${encodeURIComponent(file)}`);
+            console.log(res.data.url);
+            const url=res.data.url;
+           const link = document.createElement("a");
+    link.href = url;
+    link.download = decodeURIComponent(file.split("/").pop()); // filename
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+              }
+       catch(err)
+       {
+         console.log(err);
+       }
   }
 
   return (
@@ -232,17 +252,17 @@ function TaskBar() {
             <h3 className="font-semibold mb-2">Audio Files</h3>
             <ul className="list-disc list-inside text-sm">
             {segment.audio?.map((file, i) => {
-              const filename = encodeURIComponent(file); // decode URL
+              const filename = encodeURIComponent(file);
+              console.log(file) // decode URL
               return (
                 <li key={i} className="flex items-center justify-between border rounded p-2 my-1">
                   <span>{file}</span>
-                  <a
-                    href={`${api}/uploads/${filename}`} // path where audio is stored
-                    download
-                    className="hover:text-gray-700 bg-red-500 p-1 rounded"
-                  >
-                    <Download />
-                  </a>
+                  <button
+                      onClick={() => handleDownload(file)}
+                      className="hover:text-gray-700 bg-red-500 p-1 rounded"
+                    >
+                      <Download />
+                    </button>
                 </li>
               );
             })}
