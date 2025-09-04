@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import axios from 'axios';
 
+
 function LeadSpace() {
 
  const api="https://backend-urlk.onrender.com";
@@ -21,6 +22,7 @@ const location=useLocation();
 const [openEdit, setOpenEdit] = useState(false);
 const [selectedTask, setSelectedTask] = useState(null);
 const [newFiles, setNewFiles] = useState([]);
+const[files,setFiles]=useState([]);
 
 function timeAgo(dateString) {
   const now = new Date();
@@ -63,12 +65,57 @@ useEffect(()=>{
     },
   ]);
 const handleFileChange = (e) => {
+  console.log(e.target.files);
+  const selectedFiles = Array.from(e.target.files); // array of File objects
+  setFiles(selectedFiles);
   const fileNames = Array.from(e.target.files).map(file => file.name);
   setFile(fileNames); // store array of file names
   console.log(fileNames);
   
 };
-    const handleTask = async () => {
+  // const handleTask=async()=>{
+  //        if(!memberassign && !instructions && !file) { setError("*Fill All Fields*");
+  //         return;
+  //        }
+  //         console.log(file);
+  //        const task={
+  //           assignto:memberassign,
+  //           instructions:instructions,
+  //           audio:[file]
+  //        }
+  
+  //        console.log(task);
+  //        setError('');
+  //          try{
+  //                const res = await axios.post(`${api}/app/tasks`, {
+  //                 leadName: team.leadName,
+  //                 teamName: team.teamName,
+  //                 station: team.station,
+  //                 city: team.city,
+  //                 tasks: task
+  //               });
+  //               if(res.status===200)
+  //                {
+  //                 console.log(res.data);
+  //                 const formattedTasks = res.data.map(task => ({
+  //                 file: task.audio,
+  //                 station: task.team.station,
+  //                 assignedTo: task.assignto,
+  //                 time: timeAgo(task.createdAt),
+  //                 instructions: task.instructions,
+  //                 createdAt:task.createdAt
+  //               }));
+  //                    console.log(formattedTasks)
+  //                 setTasks(formattedTasks,); 
+  //             }
+
+  //          }
+  //          catch(err)
+  //          {
+  //            console.log(err);
+  //          }
+  // }
+  const handleTask = async () => {
   if (!memberassign || !instructions || !files || files.length === 0) {
     setError("*Fill All Fields*");
     return;
@@ -109,6 +156,7 @@ const handleFileChange = (e) => {
     console.log(err);
   }
 };
+
 
   return (
     <div>
@@ -329,4 +377,4 @@ const handleFileChange = (e) => {
   )
 }
 
-export default LeadSpace
+export default LeadSpace;
