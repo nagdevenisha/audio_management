@@ -142,8 +142,8 @@ useEffect(() => {
   console.log(meta.contentType)
   if (meta.contentType === "Advertisement") setType("ads");
   else if (meta.contentType === "Song") setType("songs");
-  else if (meta.contentType === "Program") setType("program");
-  else setType("jingle");
+  else if (meta.contentType === "Program") setType("programs");
+  else if (meta.contentType === "Jingle") setType("jingle");
 
   axios.get(`${api}/suggest?type=${type}`)
     .then(res => {
