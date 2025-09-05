@@ -137,16 +137,17 @@ useEffect(()=>{
     setRole(decoded.role);
 },[])
  
+const getResolvedType = () => {
+  if (meta.contentType === "Advertisement") return "ads";
+  if (meta.contentType === "Song") return "songs";
+  if (meta.contentType === "Program") return "programs";
+  if (meta.contentType === "Jingle") return "jingles"; // better to keep plural
+  return null;
+};
 useEffect(() => {
   if (!meta.contentType) return;
   console.log(meta.contentType)
-  
-  let resolvedType;
-  if (meta.contentType === "Advertisement") resolvedType = "ads";
-  else if (meta.contentType === "Song") resolvedType = "songs";
-  else if (meta.contentType === "Program") resolvedType = "programs";
-  else if (meta.contentType === "Jingle") resolvedType = "jingle";
-
+  const resolvedType = getResolvedType();
   axios.get(`${api}/suggest?type=${resolvedType}`)
     .then(res => {
       // res.data should be an array from Redis
@@ -164,7 +165,8 @@ const handleChange = async (selected) => {
   setMeta(prev => ({ ...prev, program: value }));
 
   // Save into Redis if new
-  await axios.post(`${api}/add?type=${type}&value=${value}`);
+  const resolvedType = getResolvedType();
+  await axios.post(`${api}/add?type=${resolvedType}&value=${value}`);
 
   // Also add immediately to options (for better UX)
   setOptions(prev => [...prev, { value, label: value }]);
