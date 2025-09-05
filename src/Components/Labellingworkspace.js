@@ -140,12 +140,14 @@ useEffect(()=>{
 useEffect(() => {
   if (!meta.contentType) return;
   console.log(meta.contentType)
-  if (meta.contentType === "Advertisement") setType("ads");
-  else if (meta.contentType === "Song") setType("songs");
-  else if (meta.contentType === "Program") setType("programs");
-  else if (meta.contentType === "Jingle") setType("jingle");
+  
+  let resolvedType;
+  if (meta.contentType === "Advertisement") resolvedType = "ads";
+  else if (meta.contentType === "Song") resolvedType = "songs";
+  else if (meta.contentType === "Program") resolvedType = "programs";
+  else if (meta.contentType === "Jingle") resolvedType = "jingle";
 
-  axios.get(`${api}/suggest?type=${type}`)
+  axios.get(`${api}/suggest?type=${resolvedType}`)
     .then(res => {
       // res.data should be an array from Redis
       console.log(res.data);
