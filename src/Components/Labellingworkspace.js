@@ -141,7 +141,7 @@ const getResolvedType = () => {
   if (meta.contentType === "Advertisement") return "ads";
   if (meta.contentType === "Song") return "songs";
   if (meta.contentType === "Program") return "programs";
-  if (meta.contentType === "Jingle") return "jingles"; // better to keep plural
+  if (meta.contentType === "Jingle") return "jingle"; // better to keep plural
   return null;
 };
 useEffect(() => {
