@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import CreatableSelect from 'react-select/creatable';
+
 
 
 
@@ -16,6 +18,9 @@ export default function Labellingworkspace() {
   const [isReady, setIsReady] = useState(false);
   const[role,setRole] =useState('');
   const[error,setError]=useState('');
+    const [allPrograms, setAllPrograms] = useState([]);
+    const[type,setType]=useState("ads");
+      const [options, setOptions] = useState([]);
   const[meta,setMeta]=useState({
      city:'',
      date:'',
@@ -132,6 +137,38 @@ useEffect(()=>{
     setRole(decoded.role);
 },[])
  
+useEffect(() => {
+  if (!meta.contentType) return;
+  console.log(meta.contentType)
+  if (meta.contentType === "Advertisement") setType("ads");
+  else if (meta.contentType === "Song") setType("songs");
+  else if (meta.contentType === "Program") setType("program");
+  else setType("jingle");
+
+  axios.get(`${api}/suggest?type=${type}`)
+    .then(res => {
+      // res.data should be an array from Redis
+      console.log(res.data);
+      setAllPrograms(res.data);
+      setOptions(res.data.map(item => ({ value: item, label: item }))); // 🔑 populate options
+    });
+}, [meta.contentType, type]);
+
+
+const handleChange = async (selected) => {
+  if (!selected) return;
+
+  const value = selected.value;
+  setMeta(prev => ({ ...prev, program: value }));
+
+  // Save into Redis if new
+  await axios.post(`${api}/add?type=${type}&value=${value}`);
+
+  // Also add immediately to options (for better UX)
+  setOptions(prev => [...prev, { value, label: value }]);
+};
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -285,7 +322,16 @@ useEffect(()=>{
           </div>
           <div>
             <label className="block text-sm font-medium" >Program</label>
-            <input className="w-full border rounded-lg p-2 mt-1" placeholder="name..." onChange={(e) => setMeta(prev => ({ ...prev, program: e.target.value }))} />
+      
+      {/* Searchable dropdown */}
+      <CreatableSelect
+        options={options}
+        value={options.find(opt => opt.value === meta.program) || null}
+        onChange={handleChange}
+        placeholder="Select or type..."
+        isClearable
+        isSearchable
+      />
           </div>
           {error && <p className="text-red-500">{error}</p>}
         </div>

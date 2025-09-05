@@ -1,17 +1,24 @@
+import axios from "axios";
 import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
 
 function Dashboard() {
+
+
+const api="https://backend-urlk.onrender.com";
+// const api="http://localhost:3001";
+
   const [showModal, setShowModal] = useState(false);
   const [city, setCity] = useState("");
   const [station, setStation] = useState("");
   const[label,setLabel]=useState('');
+  const[error,setError]=useState({cityErr:"",stationErr:""});
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("City:", city, "Station:", station);
     // ✅ You can save it to DB or state here
-    setShowModal(false);
+    // setShowModal(false);
     setCity("");
     setStation("");
   };
@@ -42,6 +49,39 @@ const cities = [
   setShowModal(true);
 };
 
+const handleSave=async()=>{
+  
+  try{
+          if(label==="city")
+          {
+           const res=await axios.post(`${api}/app/setNewCity`,{city});
+           console.log(res.data);
+           if(res.data==="City Already Present")
+           {
+             setError({cityErr:"City Already Present"});
+           }
+           else if(res.data.msg==="City saved")
+           {
+              alert("City Saved");
+           }
+           alert(res.data.msg);
+          }
+          else
+          {
+            const res=await axios.post(`${api}/app/setNewStation`,{station,city})
+            console.log(res.data);
+            if(res.data.msg==="This station already exists for the city")
+            {
+               setError({stationErr:"This station already exists for the city"});
+              //  alert("add city");
+            }
+          }
+  }
+  catch(err)
+  {
+          console.log(err);
+  }
+}
 
   return (
      <div className="min-h-screen bg-white px-6 py-8">
@@ -135,9 +175,9 @@ const cities = [
         <div className="bg-white shadow rounded-xl p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">City Management</h2>
-            <button className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition" value="city"onClick={(e)=>handleClick(e.target.value)}>
+            {/* <button className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition" value="city"onClick={(e)=>handleClick(e.target.value)}>
               + Add City
-            </button>
+            </button> */}
           </div>
           <div className="space-y-4">
             {cities.map((city, idx) => (
@@ -208,15 +248,29 @@ const cities = [
                 <label className="block text-gray-700">{label.toLocaleUpperCase()}</label>
                 <input
                   type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  value={label==="city"?city:station}
+                  onChange={(e) => {label==="city"?setCity(e.target.value):setStation(e.target.value)}}
                   required
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-purple-500 outline-none"
                 />
+                {label==="station" &&
+                <div>
+                 <label className="block text-gray-700">CITY</label>
+                 <input
+                  type="text"
+                  value={city}
+                  onChange={(e)=>setCity(e.target.value)}
+                  required
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-purple-500 outline-none"
+                />
+                </div>
+                }
+                {label==="station" && error.stationErr && <p className="text-red-500">{error.stationErr}</p>}
               </div>
               <button
                 type="submit"
                 className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition"
+                onClick={handleSave}
               >
                 Save
               </button>
