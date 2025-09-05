@@ -145,7 +145,7 @@ useEffect(() => {
   else if (meta.contentType === "Program") setType("programs");
   else if (meta.contentType === "Jingle") setType("jingle");
 
-  axios.get(`${api}/suggest?type=${type}`)
+  axios.get(`http://localhost:3001/suggest?type=${type}`)
     .then(res => {
       // res.data should be an array from Redis
       console.log(res.data);
@@ -162,7 +162,7 @@ const handleChange = async (selected) => {
   setMeta(prev => ({ ...prev, program: value }));
 
   // Save into Redis if new
-  await axios.post(`${api}/add?type=${type}&value=${value}`);
+  await axios.post(`http://localhost:3001/add?type=${type}&value=${value}`);
 
   // Also add immediately to options (for better UX)
   setOptions(prev => [...prev, { value, label: value }]);
