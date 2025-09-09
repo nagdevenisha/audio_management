@@ -1,6 +1,5 @@
 import { useState,useRef,useEffect } from "react";
 import { Play,  Volume2,ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import WaveSurfer from "wavesurfer.js";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
@@ -12,25 +11,59 @@ import CreatableSelect from 'react-select/creatable';
 export default function Labellingworkspace() {
 
   const [audioFile, setAudioFile] = useState(null);
-  const navigate=useNavigate();
   const containerRef = useRef(null);
   const wavesurferRef = useRef(null);
   const [isReady, setIsReady] = useState(false);
   const[role,setRole] =useState('');
-  const[error,setError]=useState('');
-    const [allPrograms, setAllPrograms] = useState([]);
-    const[type,setType]=useState("ads");
-      const [options, setOptions] = useState([]);
-  const[meta,setMeta]=useState({
+  const[error,setError]=useState('');;
+  const[open,setOpen]=useState(false);
+  const[content,setContent]=useState("");
+  const[song,setSong]=useState({
+     title:"",
+     artist:"",
+     album:"",
+     release:"",
+     language:""
+})
+const [songOptions, setSongOptions] = useState({
+  title: [],
+  artist: [],
+  album: [],
+  language: []
+});
+const [adsOptions, setAdsOptions] = useState({
+  brand: [],
+  product: [],
+  category: [],
+  sector: []
+});
+
+const[meta,setMeta]=useState({
      city:'',
      date:'',
      channel:'',
-     program:'',
      starttime:'',
      endtime:'',
      duration:'',
-     contentType:''
+     contentType:'',
+     program:{
+     songs:{
+          title:"",
+          artist:"",
+          album:"",
+          release:"",
+          language:""
+     },
+     ads:{
+      brand:"",
+      product:"",
+      category:"",
+      sector:""
+     },
+     jingle:'',
+     program:''
 
+    }
   });
  
   const api="https://backend-urlk.onrender.com";
@@ -114,9 +147,8 @@ const submitMetadata=async()=>{
              return;
            };
            setError("");
-          // const res=await axios.post(`${api}/app/savemetadata`,{meta});
           const res=await axios.post(`${api}/app/savemetadata`, {
-          metadata: meta, // {city, date, channel, program, ...}
+          metadata: meta,
         });
         console.log(res.data);
         if(res.data.success)
@@ -137,41 +169,123 @@ useEffect(()=>{
     setRole(decoded.role);
 },[])
  
-const getResolvedType = () => {
-  if (meta.contentType === "Advertisement") return "ads";
-  if (meta.contentType === "Song") return "songs";
-  if (meta.contentType === "Program") return "programs";
-  if (meta.contentType === "Jingle") return "jingle"; // better to keep plural
-  return null;
+const getSongFieldType = (field) => {
+  switch (field) {
+    case "title": return "song:title";
+    case "artist": return "song:artist";
+    case "album": return "song:album";
+    case "language": return "song:language";
+    default: return null;
+  }
+};
+const getAdsFieldType = (field) => {
+  switch (field) {
+    case "brand": return "ads:brand";
+    case "product": return "ads:product";
+    case "category": return "ads:category";
+    case "sector": return "ads:sector";
+    default: return null;
+  }
 };
 useEffect(() => {
-  if (!meta.contentType) return;
-  console.log(meta.contentType)
-  const resolvedType = getResolvedType();
-  axios.get(`${api}/suggest?type=${resolvedType}`)
-    .then(res => {
-      // res.data should be an array from Redis
-      console.log(res.data);
-      setAllPrograms(res.data);
-      setOptions(res.data.map(item => ({ value: item, label: item }))); // 🔑 populate options
-    });
-}, [meta.contentType, type]);
-
-
-const handleChange = async (selected) => {
+  ["brand", "product", "category", "sector"].forEach((field) => {
+    const type = getAdsFieldType(field);
+    axios.get(`${api}/suggest?type=${type}`)
+      .then(res => {
+        setAdsOptions(prev => ({
+          ...prev,
+          [field]: res.data.map(item => ({ value: item, label: item }))
+        }));
+      })
+      .catch(err => console.error(err));
+  });
+}, []);
+useEffect(() => {
+  ["title", "artist", "album", "language"].forEach((field) => {
+    const type = getSongFieldType(field);
+    axios.get(`${api}/suggest?type=${type}`)
+      .then(res => {
+        setSongOptions(prev => ({
+          ...prev,
+          [field]: res.data.map(item => ({ value: item, label: item }))
+        }));
+      })
+      .catch(err => console.error(err));
+  });
+}, []);
+const handleAdsChange = async (field, selected) => {
   if (!selected) return;
 
   const value = selected.value;
-  setMeta(prev => ({ ...prev, program: value }));
 
-  // Save into Redis if new
-  const resolvedType = getResolvedType();
-  await axios.post(`${api}/add?type=${resolvedType}&value=${value}`);
+  setMeta(prev => ({
+    ...prev,
+    program: {
+      ...prev.program,
+      ads: { ...prev.program.ads, [field]: value }
+    }
+  }));
 
-  // Also add immediately to options (for better UX)
-  setOptions(prev => [...prev, { value, label: value }]);
+  const type = getAdsFieldType(field);
+  await axios.post(`${api}/add?type=${type}&value=${value}`);
+
+  setAdsOptions(prev => ({
+    ...prev,
+    [field]: [...prev[field], { value, label: value }]
+  }));
 };
 
+const handleSongChange = async (field, selected) => {
+  if (!selected) return;
+
+  const value = selected.value;
+  setSong(prev => ({ ...prev, [field]: value }));
+
+  // Save new entry in Redis if not already present
+  const type = getSongFieldType(field);
+  await axios.post(`${api}/add?type=${type}&value=${value}`);
+
+  // Add to options instantly
+  setSongOptions(prev => ({
+    ...prev,
+    [field]: [...prev[field], { value, label: value }]
+  }));
+};
+
+
+const handleSave=async()=>{
+  console.log(meta)
+    setMeta(prev => ({
+    ...prev,
+    program: {
+      ...prev.program,
+      songs: {
+        title: song.title,
+        album: song.album,
+        release: song.release,
+        artist: song.artist,
+        language: song.language
+      }
+    }
+  }));
+    setOpen(false);
+}
+
+const handleContent=()=>{
+   if(meta.contentType==="Advertisement" || meta.contentType==="Song")
+   {
+     setOpen(true);
+     setContent("");
+   }
+   else if(meta.contentType!=="Advertisement" ||meta.contentType!=="Song"|| meta.contentType!=="Program" || meta.contentType!=="Jingle" )
+   {
+     setContent("Please Select Content Type First");
+   }
+   else if(meta.contentType==="Advertisement" ||meta.contentType==="Song"|| meta.contentType==="Program" || meta.contentType==="Jingle" )
+   {
+     setContent("");
+   }
+}
 
 
   return (
@@ -327,29 +441,132 @@ const handleChange = async (selected) => {
           <div>
             <label className="block text-sm font-medium" >Program</label>
       
-      {/* Searchable dropdown */}
-      <CreatableSelect
-        options={options}
-        value={options.find(opt => opt.value === meta.program) || null}
-        onChange={handleChange}
-        placeholder="Select or type..."
-        isClearable
-        isSearchable
-      />
+          <input className="w-full border rounded-lg p-2 mt-1" placeholder="Select or type...." onClick={handleContent}/>
           </div>
           {error && <p className="text-red-500">{error}</p>}
+          {content && <p className="text-red-500">{content}</p>}
         </div>
 
         {/* Buttons */}
         <div className="flex justify-end gap-4 mt-6">
-          <button className="px-6 py-2 rounded-lg border bg-white shadow-sm hover:bg-gray-100">
+          {/* <button className="px-6 py-2 rounded-lg border bg-white shadow-sm hover:bg-gray-100">
             Save Draft
-          </button>
+          </button> */}
           <button className="px-6 py-2 rounded-lg bg-purple-600 text-white shadow-md rounded-xl hover:bg-purple-700" onClick={submitMetadata}>
             Submit Metadata
           </button>
         </div>
       </div>
+
+
+      {open && (meta.contentType==="Advertisement" || meta.contentType==="Song")  &&<div
+        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+      >
+        <div
+          className="bg-white p-6 rounded-xl w-96 cursor-default absolute"
+        >
+          <div
+            className="modal-header flex justify-between items-center mb-4 "
+          >
+            <h2 className="text-lg font-bold">Add/Edit Item</h2>
+            <button onClick={() => setOpen(false)} className="text-gray-500 hover:text-gray-700">
+              ✕
+            </button>
+          </div>
+     {meta.contentType==="Advertisement" ?(
+          <div className="flex flex-col gap-3">
+                        <CreatableSelect
+                options={adsOptions.brand}
+                value={meta.program.ads.brand ? { value: meta.program.ads.brand, label: meta.program.ads.brand } : null}
+                placeholder="Brand"
+                onChange={(selected) => handleAdsChange("brand", selected)}
+                isClearable
+                isSearchable
+              /> 
+
+              <CreatableSelect
+                options={adsOptions.product}
+                value={meta.program.ads.product ? { value: meta.program.ads.product, label: meta.program.ads.product } : null}
+                placeholder="Product"
+                onChange={(selected) => handleAdsChange("product", selected)}
+                isClearable
+                isSearchable
+              /> 
+
+              <CreatableSelect
+                options={adsOptions.category}
+                value={meta.program.ads.category ? { value: meta.program.ads.category, label: meta.program.ads.category } : null}
+                placeholder="Category"
+                onChange={(selected) => handleAdsChange("category", selected)}
+                isClearable
+                isSearchable
+              /> 
+
+              <CreatableSelect
+                options={adsOptions.sector}
+                value={meta.program.ads.sector ? { value: meta.program.ads.sector, label: meta.program.ads.sector } : null}
+                placeholder="Sector"
+                onChange={(selected) => handleAdsChange("sector", selected)}
+                isClearable
+                isSearchable
+              /> 
+          </div>)
+          :
+          (<div className="flex flex-col gap-3">
+           <CreatableSelect
+              options={songOptions.title}
+              value={song.title ? { value: song.title, label: song.title } : null}
+              placeholder="Title"
+              onChange={(selected) => handleSongChange("title", selected)}
+              isClearable
+              isSearchable
+            /> 
+
+            <CreatableSelect
+              options={songOptions.artist}
+              value={song.artist ? { value: song.artist, label: song.artist } : null}
+              placeholder="Artist"
+              onChange={(selected) => handleSongChange("artist", selected)}
+              isClearable
+              isSearchable
+            /> 
+
+            <CreatableSelect
+              options={songOptions.album}
+              value={song.album ? { value: song.album, label: song.album } : null}
+              placeholder="Album"
+              onChange={(selected) => handleSongChange("album", selected)}
+              isClearable
+              isSearchable
+            /> 
+
+            <input
+              type="number" min="1900" max="2099" step="1"
+              placeholder="Release Year"
+              value={song.release}
+              onChange={(e) => setSong({ ...song, release: e.target.value })}
+              className="border px-3 py-2 rounded"
+            /> 
+
+            <CreatableSelect
+              options={songOptions.language}
+              value={song.language ? { value: song.language, label: song.language } : null}
+              placeholder="Language"
+              onChange={(selected) => handleSongChange("language", selected)}
+              isClearable
+              isSearchable
+            /> 
+
+          </div>
+        )}
+          <div className="flex justify-end gap-2 mt-4">
+            <button onClick={() => setOpen(false)} className="px-4 py-2 border rounded">
+              Cancel
+            </button>
+            <button className="px-4 py-2 bg-purple-600 text-white rounded" onClick={handleSave}>Save</button>
+          </div>
+        </div>
+      </div>}
     </div>
   );
 }
