@@ -3,7 +3,6 @@ import { Eye, Radio, ArrowLeft,X } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import WaveSurfer from "wavesurfer.js";
-import audio from '../audio.mp3';
 import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.js";
 import axios from "axios";
 
