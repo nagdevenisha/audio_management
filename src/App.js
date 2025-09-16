@@ -11,6 +11,9 @@ import Unauthorized from "./Authentication/Unauthorized";
 import NotFound from "./Authentication/NotFound";
 import LeadSpace from "./Components/LeadSpace";
 import Labellingworkspace from "./Components/Labellingworkspace";
+import LabeledData from "./User/LabelledData";
+import UserManagement from "./User/UserMangement";
+
 function App() {
   return (
     <div className="App">
@@ -18,7 +21,14 @@ function App() {
         <Routes>
           <Route path="/" element={<Home/>}></Route>
           <Route path="/login" element={<Login/>}></Route>
-          <Route path="/register" element={<Register/>}></Route>
+          <Route 
+            path="/register" 
+            element={
+              <ProtectedRoute roles={["Admin"]}>
+                <Register/>
+              </ProtectedRoute>
+            } 
+          />
           <Route path="/unauthorized" element={<Unauthorized/>}></Route>
           <Route path="/leadspace" element={<LeadSpace/>}></Route>
          <Route
@@ -42,9 +52,25 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/labelleddata" 
+            element={
+              <ProtectedRoute roles={["Admin"]}>
+                <LabeledData/>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/userActivity" 
+            element={
+              <ProtectedRoute roles={["Admin"]}>
+                <UserManagement/>
+              </ProtectedRoute>
+            } 
+          />
           <Route path="*" element={<NotFound />} />
             <Route path="/workspace" element={<Workspace/>}></Route>
-             <Route path="/labelling" element={<Labellingworkspace/>}></Route>
+            <Route path="/labelling" element={<Labellingworkspace/>}></Route>
         </Routes>
       </BrowserRouter>
     </div>

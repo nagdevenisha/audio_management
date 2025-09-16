@@ -7,8 +7,8 @@ import axios from 'axios';
 function TaskBar() {
 
 
-    const api="https://backend-urlk.onrender.com";
-  //  const api="http://localhost:3001";
+   const api="https://backend-urlk.onrender.com";
+  // const api="http://localhost:3001";
    const [searchTerm, setSearchTerm] = useState("");
    const[openModal,setopenModal]=useState(false);
    const[tasks,setTasks]=useState([]);
@@ -60,6 +60,7 @@ function TaskBar() {
   const handleTasks=(task)=>{
     setopenModal(true);
     setSegment(task);
+    console.log(task);
   }
 
 
@@ -158,7 +159,7 @@ function TaskBar() {
                     <button
                       className="flex items-center gap-2 bg-purple-600 text-white px-3 py-1 rounded-md text-sm hover:bg-purple-700 transition"
                       onClick={() => {
-                           navigate('/labelling');
+                           navigate('/labelling',{state:{audio:task.audioTasks}});
                         // handleTaskClick(task);
                       }}
                     >

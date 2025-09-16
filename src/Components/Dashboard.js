@@ -1,18 +1,21 @@
 import axios from "axios";
-import { ChevronLeft } from "lucide-react";
+import { BarChart3, ChevronLeft, Users2 } from "lucide-react";
 import { useState } from "react";
+import {useNavigate} from 'react-router-dom';
+
 
 function Dashboard() {
 
-
-const api="https://backend-urlk.onrender.com";
-// const api="http://localhost:3001";
+//  const api="http://localhost:3001";
+    const api="https://backend-urlk.onrender.com";
 
   const [showModal, setShowModal] = useState(false);
   const [city, setCity] = useState("");
   const [station, setStation] = useState("");
   const[label,setLabel]=useState('');
   const[error,setError]=useState({cityErr:"",stationErr:""});
+
+  const navigate=useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -23,30 +26,9 @@ const api="https://backend-urlk.onrender.com";
     setStation("");
   };
 
-const cities = [
-    { name: "Delhi", stations: 8, clips: 245, status: "Active" },
-    { name: "Karnal", stations: 6, clips: 189, status: "Active" },
-    { name: "Trichy", stations: 10, clips: 321, status: "Active" },
-    { name: "Jalgaon", stations: 4, clips: 156, status: "Active" },
-  ];
-
-  const stations = [
-    { name: "Radio City", city: "Delhi", clips: 45, status: "Excellent" },
-    { name: "Red fm", city: "Karnal", clips: 32, status: "Good" },
-    { name: "Big Fm", city: "Trichy", clips: 58, status: "Excellent" },
-    { name: "Radio Tadka", city: "Jalgaon", clips: 28, status: "Fair" },
-  ];
-
-  const statusColors = {
-    Active: "bg-green-100 text-green-600",
-    Excellent: "bg-green-100 text-green-600",
-    Good: "bg-gray-200 text-gray-600",
-    Fair: "bg-yellow-100 text-yellow-600",
-  };
-
  const handleClick = (e) => {
    setLabel(e);
-  setShowModal(true);
+   setShowModal(true);
 };
 
 const handleSave=async()=>{
@@ -70,6 +52,10 @@ const handleSave=async()=>{
           {
             const res=await axios.post(`${api}/app/setNewStation`,{station,city})
             console.log(res.data);
+            if(res)
+            {
+              setShowModal(false);
+            }
             if(res.data.msg==="This station already exists for the city")
             {
                setError({stationErr:"This station already exists for the city"});
@@ -81,6 +67,39 @@ const handleSave=async()=>{
   {
           console.log(err);
   }
+}
+
+const userActivity=async()=>{
+    try{
+           const res=await axios.get(`${api}/app/findUsers`);
+           if(res)
+           {
+             console.log(res.data);
+             navigate('/userActivity',{state:{data:res.data}})
+           }
+    }
+    catch(err)
+    {
+       console.log(err)
+    }
+}
+const labelleddata=async()=>{
+   try{
+          const res=await axios.get(`${api}/app/findData`);
+           if(res)
+           {
+             console.log(res.data);
+             if(res.data)
+             {
+               console.log(res.data);
+               navigate('/labelleddata',{state:{data:res.data}})
+             }
+           }
+   } 
+   catch(err)
+   {
+     console.log(err);
+   }
 }
 
   return (
@@ -97,7 +116,15 @@ const handleSave=async()=>{
       <p className="text-gray-600 mb-8">
         Manage your audio clips and collaborate with your team
       </p>
-
+       <div className="flex justify-end mb-2">
+        <button
+          className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition"
+          value="station"
+          onClick={(e) => handleClick(e.target.value)}
+        >
+          + Add Station
+        </button>
+      </div>
       {/* Top Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="p-6 bg-white rounded-2xl shadow-md flex items-center gap-4">
@@ -168,64 +195,7 @@ const handleSave=async()=>{
           </div>
         </div>
       </div>
-
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        
-        {/* City Management */}
-        <div className="bg-white shadow rounded-xl p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">City Management</h2>
-            {/* <button className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition" value="city"onClick={(e)=>handleClick(e.target.value)}>
-              + Add City
-            </button> */}
-          </div>
-          <div className="space-y-4">
-            {cities.map((city, idx) => (
-              <div key={idx} className="flex justify-between items-center border rounded-lg p-4">
-                <div>
-                  <h3 className="font-medium">{city.name}</h3>
-                  <p className="text-sm text-gray-500">Stations: {city.stations}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-500">Total Clips: {city.clips}</p>
-                  <span className={`text-xs px-3 py-1 rounded-full ${statusColors[city.status]}`}>
-                    {city.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Radio Stations */}
-        <div className="bg-white shadow rounded-xl p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Radio Stations</h2>
-            <button className="px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-800 transition" value="station" onClick={(e)=>handleClick(e.target.value)}>
-              + Add Station
-            </button>
-          </div>
-          <div className="space-y-4">
-            {stations.map((station, idx) => (
-              <div key={idx} className="flex justify-between items-center border rounded-lg p-4">
-                <div>
-                  <h3 className="font-medium">{station.name}</h3>
-                  <p className="text-sm text-gray-500">City: {station.city}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-500">Clips: {station.clips}</p>
-                  <span className={`text-xs px-3 py-1 rounded-full ${statusColors[station.status]}`}>
-                    {station.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-      </div>
-           <div className="p-6">
-
+      
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
@@ -278,7 +248,29 @@ const handleSave=async()=>{
           </div>
         </div>
       )}
+          <div className="grid grid-cols-2 md:grid-cols-2 gap-6 mt-4 cursor-pointer">
+      <div className="p-6 bg-white rounded-2xl shadow-md" onClick={userActivity}>
+        <div className="flex items-center gap-2 mb-4">
+          <Users2 className="text-purple-600" />
+          <h3 className="text-lg font-semibold">User Management</h3>
+        </div>
+        <p className="text-gray-600">
+          Manage all user roles, permissions, and access controls for your platform.
+        </p>
+      </div>
+
+      <div className="p-6 bg-white rounded-2xl shadow-md" onClick={labelleddata}>
+        <div className="flex items-center gap-2 mb-4">
+          <BarChart3 className="text-purple-600" />
+          <h3 className="text-lg font-semibold">Labeled Data</h3>
+        </div>
+        <p className="text-gray-600">
+          View and manage hourly audio files with their labels and annotations.
+        </p>
+      </div>
     </div>
+
+
     </div>
   )
 }

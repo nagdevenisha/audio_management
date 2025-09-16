@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 export default function Login() {
 
 
-    const api="https://backend-urlk.onrender.com";
+  const api="https://backend-urlk.onrender.com";
   // const api="http://localhost:3001";
 
     const[username,setUsername]=useState('');
@@ -36,7 +36,7 @@ export default function Login() {
             const decoded = jwtDecode(res.data.token);
             console.log(decoded.role);
            alert("✅ Login Successful");
-            if (decoded.role === "Admin") {
+           if (decoded.role === "Admin") {
           navigate("/dashboard");
         } else if (decoded.role === "Team Lead") {
           localStorage.setItem("data",username);
@@ -166,9 +166,9 @@ export default function Login() {
 
         {/* Links */}
         <div className="mt-6 flex justify-between text-sm text-gray-600">
-          <Link to="/register" className="hover:text-purple-600 font-medium">
+          {/* <Link to="/register" className="hover:text-purple-600 font-medium">
             Create Your Studio Account
-          </Link>
+          </Link> */}
           <a href="/" className="hover:text-purple-600">
             Back to Home
           </a>
